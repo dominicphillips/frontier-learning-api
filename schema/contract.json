@@ -165,14 +165,17 @@
     "routes": [
       "GET /v1/resources",
       "GET /v1/resources/{id}",
-      "GET /v1/categories"
+      "GET /v1/categories",
+      "GET /v1/status"
     ],
     "validator": "Weak ETag of the complete normalized JSON representation; If-None-Match supports weak/strong equivalents, lists and *.",
     "notModified": "304, empty body, same ETag/cache policy; request validation and cursor checks run first.",
-    "cacheControl": "public, max-age=60, s-maxage=60",
-    "uncached": "All HTTP errors, /v1/status and /health* use no-store and no ETag.",
+    "cacheControl": "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800",
+    "statusCacheControl": "public, max-age=300, s-maxage=86400",
+    "uncached": "All HTTP errors, /health* and a /v1/status whose state is unavailable use no-store and no ETag.",
     "cors": "If-None-Match request header permitted; ETag response header exposed; origin * without credentials.",
-    "edgeKey": "Full query string; only successful public GET catalog responses. No status/error caching.",
-    "publication": "Changed representation changes ETag. Without an explicit edge purge, responses may lag publication by at most the configured60-second TTL; a stale cursor can return409 and must restart with unchanged filters."
+    "edgeKey": "Full query string; only successful public GET catalog and status responses. No error caching.",
+    "frontend": "Catalog HTML public, max-age=3600; hashed /assets/ bundles public, max-age=31536000, immutable; other static files public, max-age=86400.",
+    "publication": "Changed representation changes ETag. The collector purges the deployment hostname from the edge cache after each publication; without a purge, shared caches may serve the previous representation, including a time-derived status state, for up to a day. Browsers may reuse a catalog response for a day, and for up to seven more days while revalidating or when the origin fails; clients that need the latest snapshot compare snapshotId from /v1/status, which browsers recheck after five minutes. A stale cursor can return 409 and must restart with unchanged filters."
   }
 }

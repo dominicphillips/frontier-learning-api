@@ -27,8 +27,17 @@ from .models import (
 )
 from .storage import SnapshotStore, SnapshotUnavailable
 
-# Browsers revalidate after a minute; shared caches keep a day and are purged on publication.
-CATALOG_CACHE = "public, max-age=60, s-maxage=86400"
+# Snapshots change at most daily and the collector purges the edge on publication. Browsers
+# keep catalog reads for a day and may reuse them while revalidating or when the origin fails.
+CATALOG_CACHE = (
+    "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800"
+)
+# Clients probe /v1/status for a new snapshotId, so browsers recheck it after five minutes.
+STATUS_CACHE = "public, max-age=300, s-maxage=86400"
+# Catalog pages may point at new bundles after a build; hashed bundles never change.
+FRONTEND_HTML_CACHE = "public, max-age=3600"
+FRONTEND_FILE_CACHE = "public, max-age=86400"
+FRONTEND_ASSET_CACHE = "public, max-age=31536000, immutable"
 
 
 class Cursor(Model):
@@ -62,10 +71,10 @@ def decode_cursor(value: str) -> Cursor:
         raise fail(400, "invalid-cursor") from None
 
 
-def cached_result(request: Request, value: Model) -> Response:
+def cached_result(request: Request, value: Model, cache: str = CATALOG_CACHE) -> Response:
     data = value.model_dump(mode="json", by_alias=True)
     etag = f'W/"{json_hash(data)}"'
-    headers = {"ETag": etag, "Cache-Control": CATALOG_CACHE}
+    headers = {"ETag": etag, "Cache-Control": cache}
     candidates = request.headers.get("if-none-match", "").split(",")
     if any(
         token.strip() == "*" or token.strip().removeprefix("W/") == etag.removeprefix("W/")
@@ -125,11 +134,7 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
             response.headers["Access-Control-Allow-Origin"] = "*"
             response.headers["Access-Control-Expose-Headers"] = "ETag"
         response.headers.setdefault("Cache-Control", "public, max-age=60")
-        if (
-            response.status_code >= 400
-            or request.url.path.startswith("/health")
-            or request.url.path == "/v1/status"
-        ):
+        if response.status_code >= 400 or request.url.path.startswith("/health"):
             response.headers["Cache-Control"] = "no-store"
             if "ETag" in response.headers:
                 del response.headers["ETag"]
@@ -155,9 +160,20 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
             return JSONResponse(status_code=503, content={"status": "unavailable"})
         return {"status": "ready"}
 
-    @app.get("/v1/status", response_model=Status)
-    def status():
-        return store.status()
+    @app.get(
+        "/v1/status",
+        response_model=Status,
+        responses={304: {"description": "Not modified"}},
+    )
+    def status(request: Request):
+        value = store.status()
+        if value.state == "unavailable":
+            # A shared cache must not keep reporting an outage after the snapshot returns.
+            return JSONResponse(
+                content=value.model_dump(mode="json", by_alias=True),
+                headers={"Cache-Control": "no-store"},
+            )
+        return cached_result(request, value, STATUS_CACHE)
 
     @app.get(
         "/v1/categories",
@@ -272,10 +288,13 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
                 immutable = parts[0] == "assets" and bool(
                     re.search(r"-[A-Za-z0-9_-]{8,}\.[a-zA-Z0-9]+$", target.name)
                 )
-                cache = "public, max-age=31536000, immutable" if immutable else "no-cache"
+                if target.suffix == ".html":
+                    cache = FRONTEND_HTML_CACHE
+                else:
+                    cache = FRONTEND_ASSET_CACHE if immutable else FRONTEND_FILE_CACHE
                 return FileResponse(target, headers={"Cache-Control": cache})
             if target.suffix:
                 raise fail(404, "not-found")
-            return FileResponse(root / "index.html", headers={"Cache-Control": "no-cache"})
+            return FileResponse(root / "index.html", headers={"Cache-Control": FRONTEND_HTML_CACHE})
 
     return app

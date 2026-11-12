@@ -72,6 +72,7 @@ def test_security_headers_cors_and_frontend_isolation(tmp_path, artifact, write_
     (static / "assets").mkdir()
     (static / "index.html").write_text("<!doctype html><div id='app'></div>")
     (static / "assets" / "index-AbCd1234.js").write_text("export const x = 1;")
+    (static / "favicon.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'/>")
     secret = tmp_path / "private.txt"
     secret.write_text("not-public")
     (static / "assets" / "leak.txt").symlink_to(secret)
@@ -80,7 +81,9 @@ def test_security_headers_cors_and_frontend_isolation(tmp_path, artifact, write_
     client = TestClient(create_app(snapshot, static))
     html = client.get("/reference/overview")
     assert html.status_code == 200
-    assert html.headers["cache-control"] == "no-cache"
+    assert html.headers["cache-control"] == "public, max-age=3600"
+    assert client.get("/index.html").headers["cache-control"] == "public, max-age=3600"
+    assert client.get("/favicon.svg").headers["cache-control"] == "public, max-age=86400"
     assert "script-src 'self'" in html.headers["content-security-policy"]
     assert "frame-ancestors 'none'" in html.headers["content-security-policy"]
     assert (
@@ -88,7 +91,7 @@ def test_security_headers_cors_and_frontend_isolation(tmp_path, artifact, write_
         != html.headers["content-security-policy"]
     )
     js = client.get("/assets/index-AbCd1234.js")
-    assert "immutable" in js.headers["cache-control"]
+    assert js.headers["cache-control"] == "public, max-age=31536000, immutable"
     for path in (
         "/v1/unknown",
         "/health/unknown",

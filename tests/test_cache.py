@@ -3,21 +3,27 @@ from fastapi.testclient import TestClient
 from openai_academy_api.app import create_app
 from openai_academy_api.storage import SnapshotStore
 
+CATALOG_CACHE = (
+    "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800"
+)
+STATUS_CACHE = "public, max-age=300, s-maxage=86400"
 
-def test_successful_catalog_responses_support_etag_and_weak_matching(
+
+def test_successful_read_responses_support_etag_and_weak_matching(
     tmp_path, artifact, write_artifact
 ):
     path = tmp_path / "snapshot.json"
     snapshot = SnapshotStore(path).publish(write_artifact(artifact), method="fixture")
     client = TestClient(create_app(path))
-    for route in [
-        "/v1/resources?limit=1",
-        "/v1/categories",
-        f"/v1/resources/{snapshot.resources[0].id}",
+    for route, cache in [
+        ("/v1/resources?limit=1", CATALOG_CACHE),
+        ("/v1/categories", CATALOG_CACHE),
+        (f"/v1/resources/{snapshot.resources[0].id}", CATALOG_CACHE),
+        ("/v1/status", STATUS_CACHE),
     ]:
         first = client.get(route, headers={"Origin": "https://example.com"})
         assert first.status_code == 200
-        assert first.headers["cache-control"] == "public, max-age=60, s-maxage=86400"
+        assert first.headers["cache-control"] == cache
         etag = first.headers["etag"]
         assert etag.startswith('W/"')
         assert "ETag" in first.headers["access-control-expose-headers"]
@@ -25,7 +31,32 @@ def test_successful_catalog_responses_support_etag_and_weak_matching(
             response = client.get(route, headers={"If-None-Match": condition})
             assert response.status_code == 304 and response.content == b""
             assert response.headers["etag"] == etag
+            assert response.headers["cache-control"] == cache
+            assert response.headers["access-control-expose-headers"] == "ETag"
             assert response.headers["x-content-type-options"] == "nosniff"
+
+
+def test_status_keeps_its_shape_and_changes_etag_on_publication(tmp_path, artifact, write_artifact):
+    path = tmp_path / "snapshot.json"
+    store = SnapshotStore(path)
+    store.publish(write_artifact(artifact), method="fixture")
+    client = TestClient(create_app(path))
+    first = client.get("/v1/status")
+    assert list(first.json()) == [
+        "state",
+        "snapshotId",
+        "generatedAt",
+        "lastAttemptAt",
+        "lastSuccessAt",
+        "resourceCount",
+        "coverage",
+    ]
+    artifact["resources"][0]["summary"] = "Changed fixture summary."
+    store.publish(write_artifact(artifact), method="fixture")
+    changed = client.get("/v1/status", headers={"If-None-Match": first.headers["etag"]})
+    assert changed.status_code == 200
+    assert changed.headers["etag"] != first.headers["etag"]
+    assert changed.json()["snapshotId"] != first.json()["snapshotId"]
 
 
 def test_filter_and_snapshot_changes_do_not_return_wrong_not_modified(
@@ -60,7 +91,6 @@ def test_errors_and_operational_routes_are_never_cacheable(tmp_path, artifact, w
         "/v1/resources?cursor=bad",
         "/v1/resources/missing",
         "/v1/missing",
-        "/v1/status",
         "/health",
         "/health/ready",
     ]:
@@ -68,8 +98,12 @@ def test_errors_and_operational_routes_are_never_cacheable(tmp_path, artifact, w
         assert response.status_code != 304
         assert response.headers["cache-control"] == "no-store"
         assert "etag" not in response.headers
-    missing = TestClient(create_app(tmp_path / "missing.json")).get("/v1/resources")
-    assert missing.status_code == 503 and missing.headers["cache-control"] == "no-store"
+    missing = TestClient(create_app(tmp_path / "missing.json"))
+    unavailable = missing.get("/v1/resources")
+    assert unavailable.status_code == 503 and unavailable.headers["cache-control"] == "no-store"
+    status = missing.get("/v1/status", headers={"If-None-Match": "*"})
+    assert status.status_code == 200 and status.json()["state"] == "unavailable"
+    assert status.headers["cache-control"] == "no-store" and "etag" not in status.headers
 
 
 def test_shared_cache_copy_is_identical_with_or_without_origin(tmp_path, artifact, write_artifact):
@@ -80,6 +114,7 @@ def test_shared_cache_copy_is_identical_with_or_without_origin(tmp_path, artifac
         "/v1/resources?limit=1",
         "/v1/categories",
         f"/v1/resources/{snapshot.resources[0].id}",
+        "/v1/status",
     ]:
         variants = [
             client.get(route, headers=headers)
