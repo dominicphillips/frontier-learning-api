@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2020-01-01T00:00:00Z",
+  "categories": [
+    {
+      "id": "fixture-path-1",
+      "label": "Fixture path"
+    }
+  ],
+  "resources": [
+    {
+      "title": "Fixture Gemini course",
+      "url": "https://www.skills.google/course_templates/1",
+      "kind": "course",
+      "categoryIds": [
+        "fixture-path-1"
+      ],
+      "audiences": [],
+      "tags": [],
+      "summary": null,
+      "level": "beginner",
+      "duration": {
+        "courseMinutes": 30,
+        "pathMinutes": null,
+        "videoSeconds": null
+      },
+      "detail": {
+        "audience": null,
+        "prerequisites": [],
+        "objectives": [],
+        "sections": []
+      },
+      "media": [],
+      "artwork": null,
+      "provenance": {
+        "sourceUrls": [
+          "https://www.skills.google/course_templates/1"
+        ],
+        "fetchedAt": "2020-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "coverage": [
+    {
+      "categoryId": "fixture-path-1",
+      "state": "partial",
+      "discovered": null,
+      "collected": 1
+    }
+  ],
+  "fetchReport": {
+    "requests": 0,
+    "robotsChecked": true,
+    "completedWithinLimits": true
+  }
+}
