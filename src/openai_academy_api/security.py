@@ -114,6 +114,23 @@ def source_url(value: str) -> str:
     return url
 
 
+CLUB_OVERVIEW = re.compile(r"^(https://academy\.openai\.com/public/clubs/[a-zA-Z0-9_-]+)/overview$")
+
+
+def club_root(url: str) -> str | None:
+    """A club's ``/overview`` tab is the club itself; return the club URL it aliases, else None."""
+    match = CLUB_OVERVIEW.match(url)
+    return match.group(1) if match else None
+
+
+CLUB_HOME = re.compile(r"^https://academy\.openai\.com/public/clubs/[a-zA-Z0-9_-]+(?:/overview)?$")
+
+
+def is_club_home(url: str) -> bool:
+    """A club's own page (or its /overview tab), not a video, event or resource inside the club."""
+    return CLUB_HOME.match(url) is not None
+
+
 def stable_id(url: str) -> str:
     canonical = public_academy_url(url)
     return "oa_" + hashlib.sha256(canonical.encode()).hexdigest()[:24]

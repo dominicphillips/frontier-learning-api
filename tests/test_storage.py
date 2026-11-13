@@ -83,3 +83,93 @@ def test_collection_counts_reject_invented_coverage(artifact):
     artifact["coverage"][0]["discovered"] = 2
     with pytest.raises(ValidationError):
         CollectionArtifact.model_validate_json(json.dumps(artifact))
+
+
+def test_merge_drops_club_overview_alias_of_a_published_club(artifact):
+    import copy
+    import json as _json
+
+    from openai_academy_api.models import CollectionArtifact, build_snapshot
+    from openai_academy_api.storage import merge_snapshot
+
+    club = "https://academy.openai.com/public/clubs/work-users-ynjqu"
+    first = copy.deepcopy(artifact)
+    row = copy.deepcopy(first["resources"][0])
+    row.update(title="Work Users", url=club, kind="collection")
+    row["provenance"]["sourceUrls"] = [club]
+    first["resources"].append(row)
+    first["coverage"][0].update(discovered=2, collected=2)
+    previous = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(first)), "fixture")
+
+    second = copy.deepcopy(first)
+    alias = copy.deepcopy(row)
+    alias.update(url=club + "/overview")
+    alias["provenance"]["sourceUrls"] = [club + "/overview"]
+    second["resources"].append(alias)
+    second["coverage"][0].update(discovered=3, collected=3)
+    incoming = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(second)), "fixture")
+
+    merged = merge_snapshot(previous, incoming)
+    urls = [r.url for r in merged.resources]
+    assert club in urls and club + "/overview" not in urls
+    assert len(urls) == len(previous.resources)
+
+
+def test_merge_keeps_club_overview_when_the_club_itself_is_unknown(artifact):
+    import copy
+    import json as _json
+
+    from openai_academy_api.models import CollectionArtifact, build_snapshot
+    from openai_academy_api.storage import merge_snapshot
+
+    overview = "https://academy.openai.com/public/clubs/new-club-abc12/overview"
+    second = copy.deepcopy(artifact)
+    row = copy.deepcopy(second["resources"][0])
+    row.update(title="New club", url=overview, kind="collection")
+    row["provenance"]["sourceUrls"] = [overview]
+    second["resources"].append(row)
+    second["coverage"][0].update(discovered=2, collected=2)
+    previous = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(artifact)), "fixture")
+    incoming = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(second)), "fixture")
+    assert overview in [r.url for r in merge_snapshot(previous, incoming).resources]
+
+
+def test_merge_keeps_one_record_for_a_club_reachable_under_two_slugs(artifact):
+    import copy
+    import json as _json
+
+    from openai_academy_api.models import CollectionArtifact, build_snapshot
+    from openai_academy_api.storage import merge_snapshot
+
+    second = copy.deepcopy(artifact)
+    for slug in ("government", "government-25yzc"):
+        url = f"https://academy.openai.com/public/clubs/{slug}/overview"
+        row = copy.deepcopy(second["resources"][0])
+        row.update(title="Government (United States)", url=url, kind="collection", summary="A space for public servants.")
+        row["provenance"]["sourceUrls"] = [url]
+        second["resources"].append(row)
+    second["coverage"][0].update(discovered=3, collected=3)
+    previous = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(artifact)), "fixture")
+    incoming = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(second)), "fixture")
+    merged = merge_snapshot(previous, incoming)
+    assert sum(r.title == "Government (United States)" for r in merged.resources) == 1
+
+
+def test_merge_keeps_recurring_club_videos_that_share_a_title(artifact):
+    import copy
+    import json as _json
+
+    from openai_academy_api.models import CollectionArtifact, build_snapshot
+    from openai_academy_api.storage import merge_snapshot
+
+    second = copy.deepcopy(artifact)
+    for slug in ("codex-bootcamp-201-2026-09-30", "codex-bootcamp-201-2026-10-07"):
+        url = f"https://academy.openai.com/public/clubs/builders-etkn1/videos/{slug}"
+        row = copy.deepcopy(second["resources"][0])
+        row.update(title="Codex bootcamp 201", url=url, kind="video", summary="Recording of the bootcamp.")
+        row["provenance"]["sourceUrls"] = [url]
+        second["resources"].append(row)
+    second["coverage"][0].update(discovered=3, collected=3)
+    previous = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(artifact)), "fixture")
+    incoming = build_snapshot(CollectionArtifact.model_validate_json(_json.dumps(second)), "fixture")
+    assert sum(r.title == "Codex bootcamp 201" for r in merge_snapshot(previous, incoming).resources) == 2

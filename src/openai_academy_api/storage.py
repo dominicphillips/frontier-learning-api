@@ -17,6 +17,7 @@ from .models import (
     assemble_snapshot,
     build_snapshot,
 )
+from .security import club_root, is_club_home
 
 MAX_ARTIFACT_BYTES = 16 * 1024 * 1024
 
@@ -174,6 +175,22 @@ def merge_snapshot(previous: Snapshot, incoming: Snapshot) -> Snapshot:
         raise ValueError("A refresh cannot move snapshot time backwards")
     resources = {x.id: x for x in previous.resources}
     resources.update({x.id: x for x in incoming.resources})
+    # A club's /overview tab duplicates the club's own record; keep the club and drop the alias.
+    urls = {r.url for r in resources.values()}
+    resources = {k: r for k, r in resources.items() if (club_root(r.url) or "") not in urls}
+    # One club can be reachable under two slugs (for example /clubs/government and /clubs/government-25yzc):
+    # club home records with the same title and summary are one club; keep the record whose id sorts first.
+    clubs: dict[tuple[str, str], str] = {}
+    for key in sorted(resources):
+        record = resources[key]
+        if is_club_home(record.url) and record.summary:
+            clubs.setdefault((record.title.strip().casefold(), record.summary.strip()), key)
+    resources = {
+        k: r
+        for k, r in resources.items()
+        if not (is_club_home(r.url) and r.summary)
+        or clubs[(r.title.strip().casefold(), r.summary.strip())] == k
+    }
     categories = {x.id: x for x in previous.categories}
     categories.update({x.id: x for x in incoming.categories})
     incoming_ids = {r.id for r in incoming.resources}
