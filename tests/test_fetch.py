@@ -165,3 +165,14 @@ def test_default_transport_never_follows_redirects_or_ambient_proxies(monkeypatc
     redirect = next(h for h in handlers if isinstance(h, urllib.request.HTTPRedirectHandler))
     request = urllib.request.Request(ORIGIN + "/course_templates/1401")
     assert redirect.redirect_request(request, None, 302, "Found", {}, "https://x.test/") is None
+
+
+def test_a_redirect_means_the_page_is_not_public():
+    from gemini_academy_api.fetch import NotPublic
+
+    site = Flaky([302], headers={"Location": "https://www.skills.google/"})
+    client = fetcher(site)
+    client.load_robots()
+    with pytest.raises(NotPublic, match="not public"):
+        client.get(ORIGIN + "/course_templates/1191")
+    assert client.receipts[-1].error == "HTTP 302 to https://www.skills.google/"

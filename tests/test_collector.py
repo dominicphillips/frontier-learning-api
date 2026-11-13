@@ -300,3 +300,19 @@ def test_robots_disallow_skips_page_and_blocks_catalog():
     assert blocked_catalog.calls == [f"{ORIGIN}/robots.txt"]
     parsed_path = parse_page(PATH_3666, fixture_page(PATH_3666))
     assert parsed_path.title == "Gemini Enterprise and Gemini Notebook"
+
+
+def test_course_that_redirects_anonymous_visitors_is_not_public_and_leaves_the_path_complete():
+    # Course 1191 now sends anonymous visitors to the home page: it is skipped, not failed, and the
+    # path's coverage counts only the members a visitor can open.
+    stubs = {
+        f"{ORIGIN}/course_templates/1191": 302,
+        f"{ORIGIN}/course_templates/1559": course_stub("1559", "Unlock Insights with Gemini Notebook"),
+        f"{ORIGIN}/course_templates/1587": course_stub("1587", "Enterprise Agents and Use Cases"),
+    }
+    _, outcome, artifact = run(SiteOpener(pages=stubs))
+    (coverage,) = artifact.coverage
+    assert outcome.failed == {}
+    assert "not public" in outcome.skipped[f"{ORIGIN}/course_templates/1191"]
+    assert f"{ORIGIN}/course_templates/1191" not in {r.url for r in artifact.resources}
+    assert coverage.state == "complete" and coverage.discovered == coverage.collected == 6

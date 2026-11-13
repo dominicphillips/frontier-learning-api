@@ -23,6 +23,7 @@ DEFAULT_USER_AGENT = f"{PRODUCT}/{__version__}"
 USER_AGENT = DEFAULT_USER_AGENT
 ROBOTS_URL = ACADEMY_ORIGIN + "/robots.txt"
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
+REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 
 
 class FetchError(RuntimeError):
@@ -31,6 +32,10 @@ class FetchError(RuntimeError):
 
 class RobotsDisallowed(FetchError):
     pass
+
+
+class NotPublic(FetchError):
+    """The page redirects anonymous visitors (to the home page or sign-in): it is not public."""
 
 
 class BudgetExhausted(FetchError):
@@ -182,6 +187,9 @@ class Fetcher:
                     body = response.read(self.max_bytes + 1)
             except urllib.error.HTTPError as exc:
                 status, error = exc.code, f"HTTP {exc.code}"
+                if exc.code in REDIRECT_STATUSES:
+                    location = exc.headers.get("Location", "") if exc.headers else ""
+                    error = f"HTTP {exc.code} to {location}" if location else error
                 delay = _retry_after(exc.headers.get("Retry-After") if exc.headers else None)
             except (OSError, http.client.HTTPException, ValueError) as exc:
                 error = type(exc).__name__
@@ -200,6 +208,8 @@ class Fetcher:
             )
             if ok:
                 return Page(url=url, body=body, fetched_at=fetched_at)
+            if status in REDIRECT_STATUSES:
+                raise NotPublic(f"{url}: not public ({error})")
             retryable = status in RETRY_STATUSES or status is None
             if not retryable or attempt >= self.retries:
                 raise FetchError(f"{url}: {error or f'HTTP {status}'}")

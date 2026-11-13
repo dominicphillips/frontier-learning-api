@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from .fetch import Fetcher, FetchError, RobotsDisallowed
+from .fetch import Fetcher, FetchError, NotPublic, RobotsDisallowed
 from .models import Snapshot
 from .parse import (
     ListingEntry,
@@ -182,6 +182,9 @@ def collect(
         except RobotsDisallowed as exc:
             outcome.skipped[url] = str(exc)
             continue
+        except NotPublic as exc:
+            outcome.skipped[url] = str(exc)
+            continue
         except (FetchError, ValueError) as exc:
             outcome.failed[url] = str(exc)
             active_paths.append(url)
@@ -252,6 +255,13 @@ def collect(
         except RobotsDisallowed as exc:
             outcome.skipped[url] = str(exc)
             active_courses.append(url)
+            continue
+        except NotPublic as exc:
+            # A course that sends anonymous visitors away is not in the public catalog: leave it out of its paths.
+            outcome.skipped[url] = str(exc)
+            for members in path_members.values():
+                if url in members:
+                    members.remove(url)
             continue
         except (FetchError, ValueError) as exc:
             outcome.failed[url] = str(exc)
