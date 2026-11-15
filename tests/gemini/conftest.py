@@ -164,8 +164,8 @@ def no_deployment_env(monkeypatch):
     # Tests never read a real deployment token, User-Agent override, or call Cloudflare.
     for name in (
         "GEMINI_ACADEMY_USER_AGENT",
-        "GEMINI_ACADEMY_CLOUDFLARE_ZONE_ID",
-        "GEMINI_ACADEMY_CLOUDFLARE_HOSTNAME",
-        "GEMINI_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE",
+        "FRONTIER_CLOUDFLARE_ZONE_ID",
+        "FRONTIER_CLOUDFLARE_HOSTNAMES",
+        "FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE",
     ):
         monkeypatch.delenv(name, raising=False)

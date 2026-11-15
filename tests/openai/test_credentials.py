@@ -3,7 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from openai_academy_api.credentials import collector_api_key, collector_client, key_fingerprint
+from frontier_learning.providers.openai.credentials import (
+    collector_api_key,
+    collector_client,
+    key_fingerprint,
+)
 
 
 def test_explicit_file_overrides_only_key_without_evaluating_other_assignments(

@@ -5,15 +5,16 @@ import urllib.error
 import urllib.request
 
 import pytest
-from conftest import ORIGIN, Response, SiteOpener
 
-from claude_academy_api.fetch import (
+from frontier_learning.providers.claude.fetch import (
     USER_AGENT,
     BudgetExhausted,
     Fetcher,
     FetchError,
     RobotsDisallowed,
 )
+
+from .conftest import ORIGIN, Response, SiteOpener
 
 
 class Clock:

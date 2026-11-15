@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import pytest
-from conftest import FIXTURES, ORIGIN
 
-from claude_academy_api.fetch import PRODUCT
-from claude_academy_api.robots import Robots
+from frontier_learning.providers.claude.fetch import PRODUCT
+from frontier_learning.providers.claude.robots import Robots
+
+from .conftest import FIXTURES, ORIGIN
 
 LIVE = Robots((FIXTURES / "robots.txt").read_text())
 

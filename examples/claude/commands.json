@@ -4,11 +4,9 @@
     "serve": [
       "uv",
       "run",
-      "claude-academy-api",
-      "--snapshot",
-      "data/snapshot.json",
-      "--frontend-dir",
-      "frontend/dist",
+      "frontier-learning-api",
+      "--data-dir",
+      "data",
       "--host",
       "127.0.0.1",
       "--port",
@@ -17,25 +15,31 @@
     "validateFixture": [
       "uv",
       "run",
-      "claude-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "claude",
       "validate",
-      "examples/collection.fixture.json"
+      "examples/claude/collection.fixture.json"
     ],
     "importFixture": [
       "uv",
       "run",
-      "claude-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "claude",
       "--snapshot",
       "/tmp/claude-academy-example/snapshot.json",
       "import",
-      "examples/collection.fixture.json",
+      "examples/claude/collection.fixture.json",
       "--method",
       "fixture"
     ],
     "parseSavedPage": [
       "uv",
       "run",
-      "claude-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "claude",
       "parse",
       "tests/fixtures/pages/courses__claude-code-101.html",
       "--url",
@@ -44,16 +48,20 @@
     "discover": [
       "uv",
       "run",
-      "claude-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "claude",
       "discover",
       "--live"
     ],
     "livePass": [
       "uv",
       "run",
-      "claude-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "claude",
       "--snapshot",
-      "data/snapshot.json",
+      "data/claude.json",
       "--state-dir",
       "data/collector",
       "run",
@@ -62,14 +70,18 @@
     "validateSnapshot": [
       "uv",
       "run",
-      "claude-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "claude",
       "validate-snapshot",
-      "data/snapshot.json"
+      "data/claude.json"
     ],
     "purgeCache": [
       "uv",
       "run",
-      "claude-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "claude",
       "purge-cache",
       "--live"
     ],

@@ -5,7 +5,11 @@ import urllib.request
 
 import pytest
 
-from gemini_academy_api.edge import HostnamePurge, PurgeError, purge_from_environment
+from frontier_learning.edge import (
+    HostnamePurge,
+    PurgeError,
+    purge_from_environment,
+)
 
 ZONE = "0123456789abcdef0123456789abcdef"
 TOKEN = "fixture-purge-token-0123456789"
@@ -31,12 +35,12 @@ class Opener:
 
 def test_purge_sends_one_exact_hostname_and_returns_request_id():
     opener = Opener()
-    purge = HostnamePurge(ZONE, "gemini-academy.deployedwork.com", TOKEN, opener=opener)
+    purge = HostnamePurge(ZONE, "learning.example.com", TOKEN, opener=opener)
     assert purge() == "abc123"
     ((request, timeout),) = opener.requests
     assert request.full_url == f"https://api.cloudflare.com/client/v4/zones/{ZONE}/purge_cache"
     assert request.get_method() == "POST" and timeout == 15
-    assert json.loads(request.data) == {"hosts": ["gemini-academy.deployedwork.com"]}
+    assert json.loads(request.data) == {"hosts": ["learning.example.com"]}
     assert request.get_header("Authorization") == f"Bearer {TOKEN}"
     assert request.get_header("Content-type") == "application/json"
     assert TOKEN not in repr(purge)
@@ -54,7 +58,7 @@ def test_purge_sends_one_exact_hostname_and_returns_request_id():
 )
 def test_purge_failure_is_reported_without_the_token(opener):
     with pytest.raises(PurgeError) as exc:
-        HostnamePurge(ZONE, "gemini-academy.deployedwork.com", TOKEN, opener=opener)()
+        HostnamePurge(ZONE, "learning.example.com", TOKEN, opener=opener)()
     assert TOKEN not in str(exc.value)
     assert len(opener.requests) == 1  # No retry and no broader fallback purge.
 
@@ -70,7 +74,7 @@ def test_default_transport_ignores_ambient_proxy_and_never_follows_redirects(mon
         ]
 
     assert proxies(urllib.request.build_opener())  # The default opener would use the proxy.
-    purge = HostnamePurge(ZONE, "gemini-academy.deployedwork.com", TOKEN)
+    purge = HostnamePurge(ZONE, "learning.example.com", TOKEN)
     assert proxies(purge._opener) == []
     handlers = purge._opener.handlers
     redirects = [h for h in handlers if isinstance(h, urllib.request.HTTPRedirectHandler)]
@@ -82,27 +86,27 @@ def test_configuration_comes_only_from_complete_deployment_environment(tmp_path)
     token_file = tmp_path / "purge-token"
     token_file.write_text(TOKEN + "\n")
     valid = {
-        "GEMINI_ACADEMY_CLOUDFLARE_ZONE_ID": ZONE,
-        "GEMINI_ACADEMY_CLOUDFLARE_HOSTNAME": "gemini-academy.deployedwork.com",
-        "GEMINI_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(token_file),
+        "FRONTIER_CLOUDFLARE_ZONE_ID": ZONE,
+        "FRONTIER_CLOUDFLARE_HOSTNAMES": "learning.example.com",
+        "FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(token_file),
     }
     assert purge_from_environment({}) is None
     purge = purge_from_environment(valid)
-    assert purge.zone_id == ZONE and purge.hostname == "gemini-academy.deployedwork.com"
+    assert purge.zone_id == ZONE and purge.hostname == "learning.example.com"
     assert TOKEN not in repr(purge)
     empty, double = tmp_path / "empty", tmp_path / "double"
     empty.write_text("\n")
     double.write_text(f"{TOKEN} {TOKEN}\n")
     for change in [
-        {"GEMINI_ACADEMY_CLOUDFLARE_HOSTNAME": ""},
-        {"GEMINI_ACADEMY_CLOUDFLARE_ZONE_ID": "not-a-zone"},
-        {"GEMINI_ACADEMY_CLOUDFLARE_HOSTNAME": "*.example.com"},
-        {"GEMINI_ACADEMY_CLOUDFLARE_HOSTNAME": "https://gemini-academy.deployedwork.com/"},
-        {"GEMINI_ACADEMY_CLOUDFLARE_HOSTNAME": "API.example.com"},
-        {"GEMINI_ACADEMY_CLOUDFLARE_HOSTNAME": "localhost"},
-        {"GEMINI_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(tmp_path / "missing")},
-        {"GEMINI_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(empty)},
-        {"GEMINI_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(double)},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": ""},
+        {"FRONTIER_CLOUDFLARE_ZONE_ID": "not-a-zone"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "*.example.com"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "https://learning.example.com/"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "API.example.com"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "localhost"},
+        {"FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(tmp_path / "missing")},
+        {"FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(empty)},
+        {"FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(double)},
     ]:
         with pytest.raises(ValueError) as exc:
             purge_from_environment(valid | change)

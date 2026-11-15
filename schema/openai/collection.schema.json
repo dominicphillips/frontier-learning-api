@@ -45,7 +45,7 @@
         "label": {
           "maxLength": 300,
           "minLength": 1,
-          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f‪-‮⁦-⁩]+$",
           "title": "Label",
           "type": "string"
         }
@@ -261,7 +261,7 @@
         "title": {
           "maxLength": 300,
           "minLength": 1,
-          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f‪-‮⁦-⁩]+$",
           "title": "Title",
           "type": "string"
         },
@@ -314,7 +314,7 @@
           "items": {
             "maxLength": 300,
             "minLength": 1,
-            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f‪-‮⁦-⁩]+$",
             "type": "string"
           },
           "maxItems": 50,
@@ -421,7 +421,7 @@
             {
               "maxLength": 300,
               "minLength": 1,
-              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f‪-‮⁦-⁩]+$",
               "type": "string"
             },
             {
@@ -449,7 +449,7 @@
             {
               "maxLength": 300,
               "minLength": 1,
-              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f‪-‮⁦-⁩]+$",
               "type": "string"
             },
             {
@@ -491,7 +491,7 @@
         "title": {
           "maxLength": 300,
           "minLength": 1,
-          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f‪-‮⁦-⁩]+$",
           "title": "Title",
           "type": "string"
         },

@@ -5,8 +5,8 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from gemini_academy_api.models import CollectionArtifact
-from gemini_academy_api.security import (
+from frontier_learning.providers.gemini.models import CollectionArtifact
+from frontier_learning.providers.gemini.security import (
     artwork_url,
     fetchable_url,
     official_url,

@@ -8,32 +8,7 @@ import os
 from pathlib import Path
 
 
-def serve() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--snapshot",
-        type=Path,
-        default=Path(os.getenv("ACADEMY_SNAPSHOT_PATH", "data/snapshot.json")),
-    )
-    parser.add_argument("--frontend-dir", type=Path)
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
-    args = parser.parse_args()
-    import uvicorn
-
-    from .app import create_app
-
-    uvicorn.run(
-        create_app(args.snapshot, args.frontend_dir),
-        host=args.host,
-        port=args.port,
-        log_level="info",
-        server_header=False,
-        proxy_headers=False,
-    )
-
-
-def collect() -> None:
+def collect(argv=None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--env-file", type=Path)
     parser.add_argument(
@@ -49,7 +24,7 @@ def collect() -> None:
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("dry-run", "run"):
         cmd = commands.add_parser(name)
-        cmd.add_argument("--instructions", type=Path, default=Path("prompts/collector.md"))
+        cmd.add_argument("--instructions", type=Path, default=Path("prompts/openai/collector.md"))
         cmd.add_argument("--max-pages", type=int, default=80)
         cmd.add_argument("--max-resources", type=int, default=500)
         cmd.add_argument("--max-seconds", type=int, default=600)
@@ -86,10 +61,12 @@ def collect() -> None:
     preview.add_argument("--passes", type=int, default=1)
     for name in ("validate", "validate-snapshot", "import"):
         cmd = commands.add_parser(name)
-        cmd.add_argument("artifact", type=Path)
+        cmd.add_argument("artifact", type=Path, nargs="?" if name == "validate-snapshot" else None)
         if name == "import":
             cmd.add_argument("--method", choices=["manual", "fixture"], default="manual")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    if args.command == "validate-snapshot" and args.artifact is None:
+        args.artifact = args.snapshot
 
     from .collector import Collector, ManagedAgents, make_plan, session_request
     from .models import CollectionArtifact, Snapshot
@@ -219,7 +196,7 @@ def collect() -> None:
                 )
             )
             return
-        from .edge import PurgeError, purge_from_environment
+        from ...edge import PurgeError, purge_from_environment
 
         # Deployment settings only; checked before any billable call. Never sent to the session.
         purge = purge_from_environment() if args.command != "cleanup" else None

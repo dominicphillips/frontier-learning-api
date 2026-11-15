@@ -4,18 +4,19 @@ import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from conftest import FIXTURES, ORIGIN, SiteOpener, fixture_page
 
-from claude_academy_api.collector import (
+from frontier_learning.providers.claude.collector import (
     CollectionAborted,
     collect,
     resource_queue,
     sitemap_urls,
 )
-from claude_academy_api.fetch import Fetcher
-from claude_academy_api.models import CollectionArtifact
-from claude_academy_api.parse import parse_page
-from claude_academy_api.storage import SnapshotStore
+from frontier_learning.providers.claude.fetch import Fetcher
+from frontier_learning.providers.claude.models import CollectionArtifact
+from frontier_learning.providers.claude.parse import parse_page
+from frontier_learning.providers.claude.storage import SnapshotStore
+
+from .conftest import FIXTURES, ORIGIN, SiteOpener, fixture_page
 
 COLLECTION = f"{ORIGIN}/collections/build-with-claude"
 COURSE = f"{ORIGIN}/courses/claude-code-101"

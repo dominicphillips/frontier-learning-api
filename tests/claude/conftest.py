@@ -116,8 +116,8 @@ def site():
 def no_deployment_purge(monkeypatch):
     # Tests never read a real deployment token or call Cloudflare.
     for name in (
-        "CLAUDE_ACADEMY_CLOUDFLARE_ZONE_ID",
-        "CLAUDE_ACADEMY_CLOUDFLARE_HOSTNAME",
-        "CLAUDE_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE",
+        "FRONTIER_CLOUDFLARE_ZONE_ID",
+        "FRONTIER_CLOUDFLARE_HOSTNAMES",
+        "FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE",
     ):
         monkeypatch.delenv(name, raising=False)

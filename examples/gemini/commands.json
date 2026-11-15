@@ -4,11 +4,9 @@
     "serve": [
       "uv",
       "run",
-      "gemini-academy-api",
-      "--snapshot",
-      "data/snapshot.json",
-      "--frontend-dir",
-      "frontend/dist",
+      "frontier-learning-api",
+      "--data-dir",
+      "data",
       "--host",
       "127.0.0.1",
       "--port",
@@ -17,25 +15,31 @@
     "validateFixture": [
       "uv",
       "run",
-      "gemini-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "gemini",
       "validate",
-      "examples/collection.fixture.json"
+      "examples/gemini/collection.fixture.json"
     ],
     "importFixture": [
       "uv",
       "run",
-      "gemini-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "gemini",
       "--snapshot",
       "/tmp/gemini-academy-example/snapshot.json",
       "import",
-      "examples/collection.fixture.json",
+      "examples/gemini/collection.fixture.json",
       "--method",
       "fixture"
     ],
     "parseSavedPage": [
       "uv",
       "run",
-      "gemini-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "gemini",
       "parse",
       "tests/fixtures/pages/course_templates__1401.html",
       "--url",
@@ -44,16 +48,20 @@
     "discover": [
       "uv",
       "run",
-      "gemini-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "gemini",
       "discover",
       "--live"
     ],
     "livePass": [
       "uv",
       "run",
-      "gemini-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "gemini",
       "--snapshot",
-      "data/snapshot.json",
+      "data/gemini.json",
       "--state-dir",
       "data/collector",
       "run",
@@ -62,14 +70,18 @@
     "validateSnapshot": [
       "uv",
       "run",
-      "gemini-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "gemini",
       "validate-snapshot",
-      "data/snapshot.json"
+      "data/gemini.json"
     ],
     "purgeCache": [
       "uv",
       "run",
-      "gemini-academy-collector",
+      "frontier-learning-collect",
+      "--provider",
+      "gemini",
       "purge-cache",
       "--live"
     ],

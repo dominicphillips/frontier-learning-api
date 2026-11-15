@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "serialization": "camelCase; all documented nullable fields are present",
   "routes": {
-    "GET /v1/resources": {
+    "GET /v1/providers/claude/resources": {
       "query": {
         "q": "optional text, max 200 characters",
         "category": "optional category ID (one Academy collection)",
@@ -27,14 +27,14 @@
         "503": "no valid snapshot"
       }
     },
-    "GET /v1/resources/{id}": {
+    "GET /v1/providers/claude/resources/{id}": {
       "response": "Resource",
       "errors": {
         "404": "unknown ID",
         "503": "no valid snapshot"
       }
     },
-    "GET /v1/categories": {
+    "GET /v1/providers/claude/categories": {
       "response": {
         "items": [
           {
@@ -46,7 +46,7 @@
         "snapshotId": "sha256"
       }
     },
-    "GET /v1/status": {
+    "GET /v1/providers/claude/status": {
       "response": {
         "state": "fresh|stale|unavailable",
         "snapshotId": null,
@@ -154,7 +154,6 @@
     null
   ],
   "snapshotBehavior": "Public requests only read a validated local snapshot. They never crawl or fetch source pages. Failed refresh keeps the last valid snapshot. Age greater than 7 days reports stale by default.",
-  "staticServing": "Optional --frontend-dir. API routes are registered first. Fingerprinted assets are immutable; index/documents are no-cache. SPA fallback never handles /v1, /health, /openapi.json or API documentation routes.",
   "ArtworkReference": {
     "url": "https://academy.claude.com/og/<section>/<slug>.(png|jpg|jpeg|webp), the share image of this exact page",
     "alt": null,

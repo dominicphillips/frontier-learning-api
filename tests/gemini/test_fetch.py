@@ -5,9 +5,8 @@ import urllib.error
 import urllib.request
 
 import pytest
-from conftest import ORIGIN, Response, SiteOpener
 
-from gemini_academy_api.fetch import (
+from frontier_learning.providers.gemini.fetch import (
     DEFAULT_USER_AGENT,
     USER_AGENT,
     BudgetExhausted,
@@ -17,6 +16,8 @@ from gemini_academy_api.fetch import (
     user_agent_from_environment,
     validate_user_agent,
 )
+
+from .conftest import ORIGIN, Response, SiteOpener
 
 
 class Clock:
@@ -168,7 +169,7 @@ def test_default_transport_never_follows_redirects_or_ambient_proxies(monkeypatc
 
 
 def test_a_redirect_means_the_page_is_not_public():
-    from gemini_academy_api.fetch import NotPublic
+    from frontier_learning.providers.gemini.fetch import NotPublic
 
     site = Flaky([302], headers={"Location": "https://www.skills.google/"})
     client = fetcher(site)

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import pytest
-from conftest import FIXTURES, ORIGIN
 
-from gemini_academy_api.fetch import PRODUCT
-from gemini_academy_api.robots import Robots
+from frontier_learning.providers.gemini.fetch import PRODUCT
+from frontier_learning.providers.gemini.robots import Robots
+
+from .conftest import FIXTURES, ORIGIN
 
 LIVE = Robots((FIXTURES / "robots.txt").read_text())
 

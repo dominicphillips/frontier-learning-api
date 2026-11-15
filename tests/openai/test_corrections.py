@@ -4,11 +4,12 @@ import copy
 import json
 
 import pytest
-from test_collector import Backend
 
-from openai_academy_api import corrections
-from openai_academy_api.collector import Collector, make_plan, session_request
-from openai_academy_api.storage import SnapshotStore
+from frontier_learning.providers.openai import corrections
+from frontier_learning.providers.openai.collector import Collector, make_plan, session_request
+from frontier_learning.providers.openai.storage import SnapshotStore
+
+from .test_collector import Backend
 
 COVER = {
     "url": "https://d2xo500swnpgl1.cloudfront.net/cover.png",

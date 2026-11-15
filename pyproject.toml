@@ -3,9 +3,9 @@ requires = ["hatchling>=1.27,<2"]
 build-backend = "hatchling.build"
 
 [project]
-name = "openai-academy-api"
-version = "0.1.0"
-description = "Read-only structured metadata for public OpenAI Academy resources"
+name = "frontier-learning-api"
+version = "1.0.0"
+description = "Read-only FastAPI service and offline-first snapshot collectors for public OpenAI, Claude, and Gemini learning resource metadata."
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
@@ -17,18 +17,18 @@ dependencies = [
 ]
 
 [project.scripts]
-academy-api = "openai_academy_api.cli:serve"
-academy-collector = "openai_academy_api.cli:collect"
+frontier-learning-api = "frontier_learning.cli:serve"
+frontier-learning-collect = "frontier_learning.cli:collect"
 
 [dependency-groups]
 dev = ["pytest>=9.1.1,<10", "httpx>=0.28.1,<1", "ruff>=0.17.2,<1"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/openai_academy_api"]
+packages = ["src/frontier_learning"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --import-mode=importlib"
 
 [tool.ruff]
 line-length = 100

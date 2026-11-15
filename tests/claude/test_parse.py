@@ -4,9 +4,10 @@ import json
 from dataclasses import asdict
 
 import pytest
-from conftest import ORIGIN, fixture_page
 
-from claude_academy_api.parse import parse_iso_minutes, parse_minutes, parse_page
+from frontier_learning.providers.claude.parse import parse_iso_minutes, parse_minutes, parse_page
+
+from .conftest import ORIGIN, fixture_page
 
 
 def parsed(path: str):

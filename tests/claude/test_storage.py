@@ -7,8 +7,8 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from pydantic import ValidationError
 
-from claude_academy_api.models import CollectionArtifact, Snapshot
-from claude_academy_api.storage import SnapshotStore
+from frontier_learning.providers.claude.models import CollectionArtifact, Snapshot
+from frontier_learning.providers.claude.storage import SnapshotStore
 
 
 def test_failed_refresh_preserves_last_snapshot(tmp_path, artifact, write_artifact):

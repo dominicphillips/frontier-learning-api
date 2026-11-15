@@ -8,9 +8,9 @@ from io import BytesIO
 import pytest
 from pydantic import ValidationError
 
-from openai_academy_api.fetch_public import FetchBlocked, PublicFetcher
-from openai_academy_api.models import CollectionArtifact
-from openai_academy_api.security import public_academy_url, stable_id
+from frontier_learning.providers.openai.fetch_public import FetchBlocked, PublicFetcher
+from frontier_learning.providers.openai.models import CollectionArtifact
+from frontier_learning.providers.openai.security import public_academy_url, stable_id
 
 
 @pytest.mark.parametrize(
@@ -95,7 +95,9 @@ def plan():
 
 
 def test_fetcher_enforces_budget_and_records_robots(tmp_path, monkeypatch):
-    monkeypatch.setattr("openai_academy_api.fetch_public.time.sleep", lambda _: None)
+    monkeypatch.setattr(
+        "frontier_learning.providers.openai.fetch_public.time.sleep", lambda _: None
+    )
     fetcher = PublicFetcher(plan(), tmp_path)
     opener = Opener()
     fetcher.opener = opener

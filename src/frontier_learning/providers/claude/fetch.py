@@ -17,7 +17,7 @@ from .robots import Robots
 from .security import ACADEMY_ORIGIN, source_url
 
 PRODUCT = "claude-academy-api"
-USER_AGENT = f"{PRODUCT}/{__version__} (+https://github.com/dominicphillips/claude-academy-api)"
+USER_AGENT = f"{PRODUCT}/{__version__} (+https://github.com/dominicphillips/frontier-learning-api)"
 ROBOTS_URL = ACADEMY_ORIGIN + "/robots.txt"
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
 

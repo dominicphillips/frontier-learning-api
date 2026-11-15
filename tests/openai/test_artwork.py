@@ -4,7 +4,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from openai_academy_api.models import CollectionArtifact, Snapshot, build_snapshot
+from frontier_learning.providers.openai.models import CollectionArtifact, Snapshot, build_snapshot
 
 
 def test_sourced_artwork_is_additive_and_changes_hash_not_stable_id(artifact):

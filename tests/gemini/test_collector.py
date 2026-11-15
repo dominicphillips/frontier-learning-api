@@ -4,17 +4,18 @@ import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from conftest import ORIGIN, SiteOpener, fixture_page
 
-from gemini_academy_api.collector import (
+from frontier_learning.providers.gemini.collector import (
     CATALOG_URL,
     CollectionAborted,
     collect,
 )
-from gemini_academy_api.fetch import Fetcher
-from gemini_academy_api.models import CollectionArtifact
-from gemini_academy_api.parse import parse_page
-from gemini_academy_api.storage import SnapshotStore
+from frontier_learning.providers.gemini.fetch import Fetcher
+from frontier_learning.providers.gemini.models import CollectionArtifact
+from frontier_learning.providers.gemini.parse import parse_page
+from frontier_learning.providers.gemini.storage import SnapshotStore
+
+from .conftest import ORIGIN, SiteOpener, fixture_page
 
 PATH_3666 = f"{ORIGIN}/paths/3666"
 COURSE_1401 = f"{ORIGIN}/course_templates/1401"
@@ -307,7 +308,9 @@ def test_course_that_redirects_anonymous_visitors_is_not_public_and_leaves_the_p
     # path's coverage counts only the members a visitor can open.
     stubs = {
         f"{ORIGIN}/course_templates/1191": 302,
-        f"{ORIGIN}/course_templates/1559": course_stub("1559", "Unlock Insights with Gemini Notebook"),
+        f"{ORIGIN}/course_templates/1559": course_stub(
+            "1559", "Unlock Insights with Gemini Notebook"
+        ),
         f"{ORIGIN}/course_templates/1587": course_stub("1587", "Enterprise Agents and Use Cases"),
     }
     _, outcome, artifact = run(SiteOpener(pages=stubs))

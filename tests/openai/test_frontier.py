@@ -5,11 +5,12 @@ import sys
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from test_collector import Backend
 
-from openai_academy_api import cli
-from openai_academy_api.collector import Collector, make_plan, session_request
-from openai_academy_api.frontier import Frontier, next_pass, simulate
+from frontier_learning.providers.openai import cli
+from frontier_learning.providers.openai.collector import Collector, make_plan, session_request
+from frontier_learning.providers.openai.frontier import Frontier, next_pass, simulate
+
+from .test_collector import Backend
 
 LISTING = "https://academy.openai.com/pages/courses"
 COURSE = "https://academy.openai.com/public/courses/"

@@ -5,7 +5,11 @@ import urllib.request
 
 import pytest
 
-from claude_academy_api.edge import HostnamePurge, PurgeError, purge_from_environment
+from frontier_learning.edge import (
+    HostnamePurge,
+    PurgeError,
+    purge_from_environment,
+)
 
 ZONE = "0123456789abcdef0123456789abcdef"
 TOKEN = "fixture-purge-token-0123456789"
@@ -82,9 +86,9 @@ def test_configuration_comes_only_from_complete_deployment_environment(tmp_path)
     token_file = tmp_path / "purge-token"
     token_file.write_text(TOKEN + "\n")
     valid = {
-        "CLAUDE_ACADEMY_CLOUDFLARE_ZONE_ID": ZONE,
-        "CLAUDE_ACADEMY_CLOUDFLARE_HOSTNAME": "api.example.com",
-        "CLAUDE_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(token_file),
+        "FRONTIER_CLOUDFLARE_ZONE_ID": ZONE,
+        "FRONTIER_CLOUDFLARE_HOSTNAMES": "api.example.com",
+        "FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(token_file),
     }
     assert purge_from_environment({}) is None
     purge = purge_from_environment(valid)
@@ -94,15 +98,15 @@ def test_configuration_comes_only_from_complete_deployment_environment(tmp_path)
     empty.write_text("\n")
     double.write_text(f"{TOKEN} {TOKEN}\n")
     for change in [
-        {"CLAUDE_ACADEMY_CLOUDFLARE_HOSTNAME": ""},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_ZONE_ID": "not-a-zone"},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_HOSTNAME": "*.example.com"},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_HOSTNAME": "https://api.example.com/"},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_HOSTNAME": "API.example.com"},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_HOSTNAME": "localhost"},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(tmp_path / "missing")},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(empty)},
-        {"CLAUDE_ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE": str(double)},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": ""},
+        {"FRONTIER_CLOUDFLARE_ZONE_ID": "not-a-zone"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "*.example.com"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "https://api.example.com/"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "API.example.com"},
+        {"FRONTIER_CLOUDFLARE_HOSTNAMES": "localhost"},
+        {"FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(tmp_path / "missing")},
+        {"FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(empty)},
+        {"FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE": str(double)},
     ]:
         with pytest.raises(ValueError) as exc:
             purge_from_environment(valid | change)

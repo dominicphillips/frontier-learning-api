@@ -11,31 +11,6 @@ from pathlib import Path
 REPORTS_KEPT = 30
 
 
-def serve() -> None:
-    parser = argparse.ArgumentParser(prog="claude-academy-api")
-    parser.add_argument(
-        "--snapshot",
-        type=Path,
-        default=Path(os.getenv("CLAUDE_ACADEMY_SNAPSHOT_PATH", "data/snapshot.json")),
-    )
-    parser.add_argument("--frontend-dir", type=Path)
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
-    args = parser.parse_args()
-    import uvicorn
-
-    from .app import create_app
-
-    uvicorn.run(
-        create_app(args.snapshot, args.frontend_dir),
-        host=args.host,
-        port=args.port,
-        log_level="info",
-        server_header=False,
-        proxy_headers=False,
-    )
-
-
 def _write_report(state_dir: Path, report: dict) -> Path:
     from .storage import atomic_json
 
@@ -50,8 +25,8 @@ def _write_report(state_dir: Path, report: dict) -> Path:
 def _run(args, parser) -> int:
     import fcntl
 
+    from ...edge import PurgeError, purge_from_environment
     from .collector import collect
-    from .edge import PurgeError, purge_from_environment
     from .fetch import USER_AGENT, Fetcher
     from .models import CollectionArtifact
     from .storage import SnapshotStore, SnapshotUnavailable, now
@@ -129,8 +104,8 @@ def _run(args, parser) -> int:
     return 0
 
 
-def collect() -> None:
-    parser = argparse.ArgumentParser(prog="claude-academy-collector")
+def collect(argv=None) -> None:
+    parser = argparse.ArgumentParser(prog="frontier-learning-collect --provider claude")
     parser.add_argument(
         "--snapshot",
         type=Path,
@@ -156,10 +131,12 @@ def collect() -> None:
     purge_cache.add_argument("--live", action="store_true", required=True)
     for name in ("validate", "validate-snapshot", "import"):
         cmd = commands.add_parser(name)
-        cmd.add_argument("artifact", type=Path)
+        cmd.add_argument("artifact", type=Path, nargs="?" if name == "validate-snapshot" else None)
         if name == "import":
             cmd.add_argument("--method", choices=["manual", "fixture"], default="manual")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    if args.command == "validate-snapshot" and args.artifact is None:
+        args.artifact = args.snapshot
 
     from .models import CollectionArtifact, Snapshot
     from .storage import SnapshotStore, bounded_json
@@ -199,7 +176,7 @@ def collect() -> None:
             page = parse_page(args.url, bounded_json(args.html).decode("utf-8", "replace"))
             print(json.dumps(asdict(page) | {"tags": page.tags}, indent=2, ensure_ascii=False))
         elif args.command == "purge-cache":
-            from .edge import PurgeError, purge_from_environment
+            from ...edge import PurgeError, purge_from_environment
 
             purge = purge_from_environment()
             if purge is None:

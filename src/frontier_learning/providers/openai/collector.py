@@ -16,8 +16,8 @@ from pathlib import Path
 
 from pydantic import AwareDatetime, Field
 
+from ...edge import PurgeError
 from . import corrections
-from .edge import PurgeError
 from .frontier import Frontier
 from .models import CollectionArtifact, Model
 from .security import NETWORK_HOSTS, public_academy_url
@@ -93,7 +93,7 @@ def session_request(plan: Plan, instructions: str) -> dict:
         raise CollectorError("Collector instructions are missing or too large")
     for url in plan.seed_urls:
         public_academy_url(url, discovery=True)
-    package = files("openai_academy_api")
+    package = files("frontier_learning.providers.openai")
     schema = json.dumps(CollectionArtifact.model_json_schema(by_alias=True)).encode()
     return {
         "agent": {

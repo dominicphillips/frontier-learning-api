@@ -5,7 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from gemini_academy_api.scope import dry_check_catalog, in_scope, in_text_scope, is_deprecated
+from frontier_learning.providers.gemini.scope import (
+    dry_check_catalog,
+    in_scope,
+    in_text_scope,
+    is_deprecated,
+)
 
 
 @pytest.mark.parametrize(

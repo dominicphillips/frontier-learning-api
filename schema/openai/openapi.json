@@ -1,46 +1,17 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Academy Resource API",
-    "version": "0.1.0"
+    "title": "Frontier Learning API",
+    "version": "1.0.0"
   },
   "paths": {
-    "/health": {
+    "/v1/providers/openai/status": {
       "get": {
-        "summary": "Health",
-        "operationId": "health_health_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/health/ready": {
-      "get": {
-        "summary": "Ready",
-        "operationId": "ready_health_ready_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/status": {
-      "get": {
+        "tags": [
+          "OpenAI Academy"
+        ],
         "summary": "Status",
-        "operationId": "status_v1_status_get",
+        "operationId": "status_v1_providers_openai_status_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -58,10 +29,13 @@
         }
       }
     },
-    "/v1/categories": {
+    "/v1/providers/openai/categories": {
       "get": {
+        "tags": [
+          "OpenAI Academy"
+        ],
         "summary": "Categories",
-        "operationId": "categories_v1_categories_get",
+        "operationId": "categories_v1_providers_openai_categories_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -79,10 +53,13 @@
         }
       }
     },
-    "/v1/resources": {
+    "/v1/providers/openai/resources": {
       "get": {
+        "tags": [
+          "OpenAI Academy"
+        ],
         "summary": "Resources",
-        "operationId": "resources_v1_resources_get",
+        "operationId": "resources_v1_providers_openai_resources_get",
         "parameters": [
           {
             "name": "q",
@@ -227,10 +204,13 @@
         }
       }
     },
-    "/v1/resources/{resource_id}": {
+    "/v1/providers/openai/resources/{resource_id}": {
       "get": {
+        "tags": [
+          "OpenAI Academy"
+        ],
         "summary": "Resource",
-        "operationId": "resource_v1_resources__resource_id__get",
+        "operationId": "resource_v1_providers_openai_resources__resource_id__get",
         "parameters": [
           {
             "name": "resource_id",
@@ -248,7 +228,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Resource"
+                  "$ref": "#/components/schemas/frontier_learning__providers__openai__models__Resource"
                 }
               }
             }
@@ -272,6 +252,26 @@
   },
   "components": {
     "schemas": {
+      "Artwork": {
+        "properties": {
+          "url": {
+            "title": "Url"
+          },
+          "alt": {
+            "title": "Alt"
+          },
+          "sourceUrl": {
+            "title": "Sourceurl"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url",
+          "sourceUrl"
+        ],
+        "title": "Artwork"
+      },
       "ArtworkReference": {
         "properties": {
           "url": {
@@ -291,6 +291,60 @@
           "sourceUrl"
         ],
         "title": "ArtworkReference"
+      },
+      "CatalogStatus": {
+        "properties": {
+          "state": {
+            "title": "State"
+          },
+          "snapshotId": {
+            "title": "Snapshotid"
+          },
+          "resourceCount": {
+            "title": "Resourcecount"
+          },
+          "providers": {
+            "title": "Providers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state",
+          "snapshotId",
+          "resourceCount",
+          "providers"
+        ],
+        "title": "CatalogStatus"
+      },
+      "Category": {
+        "properties": {
+          "id": {
+            "title": "Id"
+          },
+          "provider": {
+            "title": "Provider"
+          },
+          "slug": {
+            "title": "Slug"
+          },
+          "label": {
+            "title": "Label"
+          },
+          "count": {
+            "title": "Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "slug",
+          "label",
+          "count"
+        ],
+        "title": "Category"
       },
       "CategoryCount": {
         "properties": {
@@ -455,53 +509,49 @@
         ],
         "title": "Provenance"
       },
-      "Resource": {
+      "Provider": {
         "properties": {
-          "title": {
-            "title": "Title"
-          },
-          "url": {
-            "title": "Url"
-          },
-          "kind": {
-            "title": "Kind"
-          },
-          "categoryIds": {
-            "title": "Categoryids"
-          },
-          "audiences": {
-            "title": "Audiences"
-          },
-          "tags": {
-            "title": "Tags"
-          },
-          "summary": {
-            "title": "Summary"
-          },
-          "level": {
-            "title": "Level"
-          },
-          "duration": {},
-          "detail": {},
-          "media": {
-            "title": "Media"
-          },
-          "artwork": {},
           "id": {
             "title": "Id"
           },
-          "provenance": {}
+          "label": {
+            "title": "Label"
+          },
+          "sourceUrl": {
+            "title": "Sourceurl"
+          },
+          "resourcePrefix": {
+            "title": "Resourceprefix"
+          },
+          "kinds": {
+            "title": "Kinds"
+          },
+          "status": {}
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "title",
-          "url",
-          "kind",
           "id",
-          "provenance"
+          "label",
+          "sourceUrl",
+          "resourcePrefix",
+          "kinds",
+          "status"
         ],
-        "title": "Resource"
+        "title": "Provider"
+      },
+      "ProviderPage": {
+        "properties": {
+          "items": {
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ProviderPage"
       },
       "ResourcePage": {
         "properties": {
@@ -647,6 +697,211 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "frontier_learning__catalog__Resource": {
+        "properties": {
+          "id": {
+            "title": "Id"
+          },
+          "provider": {
+            "title": "Provider"
+          },
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "categoryIds": {
+            "title": "Categoryids"
+          },
+          "audiences": {
+            "title": "Audiences"
+          },
+          "tags": {
+            "title": "Tags"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "detail": {},
+          "media": {
+            "title": "Media"
+          },
+          "artwork": {},
+          "provenance": {}
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "title",
+          "url",
+          "kind",
+          "categoryIds",
+          "audiences",
+          "tags",
+          "summary",
+          "level",
+          "duration",
+          "detail",
+          "media",
+          "artwork",
+          "provenance"
+        ],
+        "title": "Resource"
+      },
+      "frontier_learning__providers__claude__models__Resource": {
+        "properties": {
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "categoryIds": {
+            "title": "Categoryids"
+          },
+          "audiences": {
+            "title": "Audiences"
+          },
+          "tags": {
+            "title": "Tags"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "detail": {},
+          "media": {
+            "title": "Media"
+          },
+          "artwork": {},
+          "id": {
+            "title": "Id"
+          },
+          "provenance": {}
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "kind",
+          "id",
+          "provenance"
+        ],
+        "title": "Resource"
+      },
+      "frontier_learning__providers__gemini__models__Resource": {
+        "properties": {
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "categoryIds": {
+            "title": "Categoryids"
+          },
+          "audiences": {
+            "title": "Audiences"
+          },
+          "tags": {
+            "title": "Tags"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "detail": {},
+          "media": {
+            "title": "Media"
+          },
+          "artwork": {},
+          "id": {
+            "title": "Id"
+          },
+          "provenance": {}
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "kind",
+          "id",
+          "provenance"
+        ],
+        "title": "Resource"
+      },
+      "frontier_learning__providers__openai__models__Resource": {
+        "properties": {
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "categoryIds": {
+            "title": "Categoryids"
+          },
+          "audiences": {
+            "title": "Audiences"
+          },
+          "tags": {
+            "title": "Tags"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "detail": {},
+          "media": {
+            "title": "Media"
+          },
+          "artwork": {},
+          "id": {
+            "title": "Id"
+          },
+          "provenance": {}
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "kind",
+          "id",
+          "provenance"
+        ],
+        "title": "Resource"
       }
     }
   }

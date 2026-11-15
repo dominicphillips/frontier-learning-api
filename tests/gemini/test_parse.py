@@ -5,9 +5,8 @@ import json
 from dataclasses import asdict
 
 import pytest
-from conftest import ORIGIN, fixture_page
 
-from gemini_academy_api.parse import (
+from frontier_learning.providers.gemini.parse import (
     parse_credential_tags,
     parse_iso_minutes,
     parse_level,
@@ -16,6 +15,8 @@ from gemini_academy_api.parse import (
     parse_page,
     path_category_id,
 )
+
+from .conftest import ORIGIN, fixture_page
 
 
 def parsed(path: str):

@@ -6,7 +6,8 @@ from datetime import timedelta
 
 import pytest
 
-from openai_academy_api.collector import (
+from frontier_learning.edge import PurgeError
+from frontier_learning.providers.openai.collector import (
     OUTPUT_PATH,
     RECEIPTS_PATH,
     Collector,
@@ -14,8 +15,7 @@ from openai_academy_api.collector import (
     make_plan,
     session_request,
 )
-from openai_academy_api.edge import PurgeError
-from openai_academy_api.storage import SnapshotStore
+from frontier_learning.providers.openai.storage import SnapshotStore
 
 
 class Backend:
@@ -255,7 +255,7 @@ def test_fake_artifact_extra_data_is_not_passed_through(tmp_path, artifact):
 
 
 def test_live_cli_requires_explicit_flag_without_constructing_client(monkeypatch):
-    from openai_academy_api.cli import collect
+    from frontier_learning.providers.openai.cli import collect
 
     monkeypatch.setattr("sys.argv", ["academy-collector", "run"])
     with pytest.raises(SystemExit) as exc:
@@ -264,7 +264,7 @@ def test_live_cli_requires_explicit_flag_without_constructing_client(monkeypatch
 
 
 def test_custom_seed_file_dry_run_has_no_network(tmp_path, monkeypatch, capsys):
-    from openai_academy_api.cli import collect
+    from frontier_learning.providers.openai.cli import collect
 
     seeds = tmp_path / "seeds.json"
     seeds.write_text(json.dumps(["https://academy.openai.com/public/content"]))
@@ -456,12 +456,12 @@ def test_daily_mode_never_resubmits_existing_day_before_loading_key(
 ):
     import uuid
 
-    from openai_academy_api.cli import collect
-    from openai_academy_api.storage import now
+    from frontier_learning.providers.openai.cli import collect
+    from frontier_learning.providers.openai.storage import now
 
     state_dir = tmp_path / "runs"
     timestamp = now()
-    monkeypatch.setattr("openai_academy_api.storage.now", lambda: timestamp)
+    monkeypatch.setattr("frontier_learning.storage.now", lambda: timestamp)
     run_id = str(
         uuid.uuid5(
             uuid.NAMESPACE_URL,
@@ -523,7 +523,7 @@ def test_failed_setup_never_submits_input(tmp_path, artifact):
 def test_source_helper_honors_runtime_proxy_and_still_rejects_private_target(tmp_path, monkeypatch):
     import urllib.request
 
-    from openai_academy_api.fetch_public import PublicFetcher
+    from frontier_learning.providers.openai.fetch_public import PublicFetcher
 
     monkeypatch.setenv("https_proxy", "http://127.0.0.1:9")
     fetcher = PublicFetcher(make_plan().model_dump(mode="json", by_alias=True), tmp_path)
@@ -696,8 +696,8 @@ def _live_argv(tmp_path, *extra):
 def test_daily_cli_stops_after_unreviewed_failure_before_provider_calls(
     tmp_path, monkeypatch, capsys
 ):
-    from openai_academy_api.cli import collect
-    from openai_academy_api.collector import ManagedAgents
+    from frontier_learning.providers.openai.cli import collect
+    from frontier_learning.providers.openai.collector import ManagedAgents
 
     failed = tmp_path / "runs" / "6f1c2b9e-0c5f-4a43-9a43-4d55a0d1f0aa"
     failed.mkdir(parents=True)
@@ -722,7 +722,7 @@ def test_daily_cli_stops_after_unreviewed_failure_before_provider_calls(
 
 
 def test_cli_reports_purge_failure_without_failing_publication(tmp_path, monkeypatch, capsys):
-    from openai_academy_api.cli import collect
+    from frontier_learning.providers.openai.cli import collect
 
     published = {"state": "published", "edgePurge": {"state": "failed", "reason": "HTTP 403"}}
     monkeypatch.setattr(Collector, "start", lambda self, plan, request, daily=False: published)
@@ -736,8 +736,8 @@ def test_cli_reports_purge_failure_without_failing_publication(tmp_path, monkeyp
 
 
 def test_purge_cache_cli_requires_live_flag_and_settings(tmp_path, monkeypatch, capsys):
-    from openai_academy_api.cli import collect
-    from openai_academy_api.edge import HostnamePurge
+    from frontier_learning.edge import HostnamePurge
+    from frontier_learning.providers.openai.cli import collect
 
     monkeypatch.setattr("sys.argv", ["academy-collector", "purge-cache"])
     with pytest.raises(SystemExit) as exc:
@@ -749,9 +749,9 @@ def test_purge_cache_cli_requires_live_flag_and_settings(tmp_path, monkeypatch, 
     assert exc.value.code == 1 and "missing" in capsys.readouterr().err
     token = tmp_path / "purge-token"
     token.write_text("fixture-purge-token-0123456789\n")
-    monkeypatch.setenv("ACADEMY_CLOUDFLARE_ZONE_ID", "0" * 32)
-    monkeypatch.setenv("ACADEMY_CLOUDFLARE_HOSTNAME", "api.example.com")
-    monkeypatch.setenv("ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE", str(token))
+    monkeypatch.setenv("FRONTIER_CLOUDFLARE_ZONE_ID", "0" * 32)
+    monkeypatch.setenv("FRONTIER_CLOUDFLARE_HOSTNAMES", "api.example.com")
+    monkeypatch.setenv("FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE", str(token))
     monkeypatch.setattr(HostnamePurge, "__call__", lambda self: "abc123")
     collect()
     out = capsys.readouterr().out

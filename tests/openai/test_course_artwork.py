@@ -6,17 +6,21 @@ import urllib.error
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from test_collector import Backend
-from test_security import Response
-from test_security import plan as fetch_plan
 
-from openai_academy_api.artwork_refresh import prepare_artwork_refresh
-from openai_academy_api.cli import collect
-from openai_academy_api.collector import Collector, make_plan, session_request
-from openai_academy_api.course_artwork import apply_course_artwork, parse_course_page
-from openai_academy_api.fetch_public import PublicFetcher
-from openai_academy_api.models import CollectionArtifact, Snapshot, build_snapshot
-from openai_academy_api.storage import SnapshotStore
+from frontier_learning.providers.openai.artwork_refresh import prepare_artwork_refresh
+from frontier_learning.providers.openai.cli import collect
+from frontier_learning.providers.openai.collector import Collector, make_plan, session_request
+from frontier_learning.providers.openai.course_artwork import (
+    apply_course_artwork,
+    parse_course_page,
+)
+from frontier_learning.providers.openai.fetch_public import PublicFetcher
+from frontier_learning.providers.openai.models import CollectionArtifact, Snapshot, build_snapshot
+from frontier_learning.providers.openai.storage import SnapshotStore
+
+from .test_collector import Backend
+from .test_security import Response
+from .test_security import plan as fetch_plan
 
 PARENT_URL = "https://academy.openai.com/public/courses/ai-foundations-dnq5w"
 CHILD_URL = "https://academy.openai.com/public/courses/ai-foundations-juzjs"
@@ -139,7 +143,9 @@ class PageOpener:
 
 @pytest.mark.parametrize("mode", ["success", "budget", "robots", "network"])
 def test_fetcher_follows_only_explicit_first_child_within_limits(tmp_path, monkeypatch, mode):
-    monkeypatch.setattr("openai_academy_api.fetch_public.time.sleep", lambda _: None)
+    monkeypatch.setattr(
+        "frontier_learning.providers.openai.fetch_public.time.sleep", lambda _: None
+    )
     plan = fetch_plan()
     plan.update(maxPages=2 if mode == "budget" else 3, maxResponseBytes=10000)
     opener = PageOpener(

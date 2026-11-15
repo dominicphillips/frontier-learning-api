@@ -5,8 +5,8 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from claude_academy_api.models import CollectionArtifact
-from claude_academy_api.security import (
+from frontier_learning.providers.claude.models import CollectionArtifact
+from frontier_learning.providers.claude.security import (
     artwork_url,
     official_url,
     resource_kind,

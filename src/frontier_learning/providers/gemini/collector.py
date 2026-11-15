@@ -257,7 +257,8 @@ def collect(
             active_courses.append(url)
             continue
         except NotPublic as exc:
-            # A course that sends anonymous visitors away is not in the public catalog: leave it out of its paths.
+            # A course that sends anonymous visitors away is not in the public catalog: leave it out
+            # of its paths.
             outcome.skipped[url] = str(exc)
             for members in path_members.values():
                 if url in members:
