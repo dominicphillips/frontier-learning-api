@@ -1,0 +1,247 @@
+{
+  "app": {
+    "name": "Claude Academy API",
+    "documentTitle": "Claude Academy API Docs"
+  },
+  "nav": {
+    "sectionsLabel": "API documentation",
+    "externalLabel": "External links",
+    "skipToContent": "Skip to content",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "overview": "Overview",
+    "resources": "Resources",
+    "resourceDetail": "Resource detail",
+    "categories": "Categories",
+    "status": "Status",
+    "github": "GitHub",
+    "openapi": "OpenAPI spec",
+    "health": "Health check",
+    "primaryLabel": "Main",
+    "courses": "Catalog",
+    "reference": "API reference"
+  },
+  "footer": {
+    "independence": "Independent open-source DeployedWork project. Not affiliated with or endorsed by Anthropic, and not an access or provisioning service.",
+    "madeBy": "Built by"
+  },
+  "actions": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Copy failed",
+    "run": "Run request",
+    "running": "Running…",
+    "runAgain": "Run again",
+    "retry": "Retry",
+    "nextPage": "Next page",
+    "openOfficial": "Open resource",
+    "backHome": "Back to overview"
+  },
+  "labels": {
+    "baseUrl": "Base URL",
+    "curl": "curl",
+    "shape": "Response shape",
+    "response": "Response body",
+    "requestUrl": "Request URL"
+  },
+  "request": {
+    "idle": "Run the request to inspect the live response from the current snapshot.",
+    "loading": "Requesting live response…",
+    "failed": "The request did not complete. Check your connection and retry.",
+    "statusLine": "HTTP {status} in {ms} ms",
+    "emptyBody": "(Empty response body)"
+  },
+  "errors": {
+    "badRequest": "The cursor is invalid or does not match the active filters. Run the query again from the first page.",
+    "notFound": "No resource matched this ID in the current snapshot. Check the ID or list resources to copy a valid ca_ ID.",
+    "obsoleteSnapshot": "The snapshot changed while paging. Run the query again without a cursor to read from the current snapshot.",
+    "noSnapshot": "No validated snapshot is currently available to serve requests. Check /v1/status and retry later.",
+    "unexpected": "The request returned an error. If status is 422, check your query parameters against the documented limits in the response body; otherwise retry."
+  },
+  "units": {
+    "minutes": "{minutes} min",
+    "seconds": "{seconds} sec",
+    "minutesSeconds": "{minutes} min {seconds} sec"
+  },
+  "overview": {
+    "title": "Query public Claude Academy learning resources",
+    "lede": "Read-only JSON endpoints for searching and inspecting indexed public Claude Academy courses, collections, tutorials, and use cases without an API key.",
+    "baseUrlHeading": "Base URL and authentication",
+    "baseUrlLede": "All endpoints are public read-only GET routes under this origin and require no API key or bearer token.",
+    "quickStartHeading": "Fetch your first page of resources",
+    "quickStartLede": "Run this curl command in your terminal to retrieve up to five indexed learning resources.",
+    "endpointsHeading": "Available GET endpoints",
+    "endpointsLede": "Select a catalog route to view its parameters and response schema, or open the operational routes directly.",
+    "endpointColumnPath": "Route",
+    "endpointColumnDescription": "Description",
+    "tryHeading": "Send a live GET request",
+    "tryLede": "Choose an endpoint to query the current local snapshot directly from your browser.",
+    "endpointLabel": "Endpoint",
+    "conventionsHeading": "Snapshot, schema, and scope rules",
+    "conventions": {
+      "readOnly": "Snapshot-backed reads: Every request reads a validated local snapshot and never triggers a crawl or source fetch.",
+      "cursors": "Snapshot-scoped pagination: Results are ordered by ascending stable ca_ ID; cursors bind to your active filters and snapshotId, returning 400 on filter mismatch or 409 if the snapshot changed.",
+      "nulls": "Explicit empty values: Responses use camelCase and keep all documented fields present, returning null or [] when a fact is unverified or absent on the source page.",
+      "durations": "Durations: duration.courseMinutes holds the estimated time shown on the official page for courses, tutorials, and use cases. pathMinutes and videoSeconds are null for this source.",
+      "sources": "Canonical source links: Each resource ID (ca_ plus 24 hex characters) hashes its canonical public Academy URL, and url plus provenance.sourceUrls link directly to the original pages.",
+      "notExposed": "Catalog metadata only: The API does not provide enrollment, learner progress, course text, videos, or images. media is always [], and artwork links to the page's own share image on academy.claude.com."
+    },
+    "linksHeading": "Machine-readable specs and source code",
+    "linksLede": "Inspect the OpenAPI 3.1 schema, check server health, or view the repository."
+  },
+  "endpoints": {
+    "listResources": "Filter and paginate indexed learning resources by keyword, category, kind, or audience.",
+    "getResource": "Fetch full metadata, course outline or collection sections, duration, and provenance for one resource ID.",
+    "categories": "List Academy collections with their slugs, display labels, and current resource counts.",
+    "status": "Check snapshot freshness state, refresh timestamps, total count, and per-category coverage.",
+    "health": "Liveness check returning HTTP 200 and status ok when the server process is up.",
+    "openapi": "OpenAPI 3.1 specification for all public routes and response schemas."
+  },
+  "resources": {
+    "title": "List and filter learning resources",
+    "lede": "Search the current snapshot by keyword, collection, or kind with deterministic cursor pagination.",
+    "paramsHeading": "Query parameters",
+    "params": {
+      "q": "Case-insensitive text search across resource titles, summaries, and tags such as product and role labels (up to 200 characters).",
+      "category": "Collection slug from GET /v1/categories (lowercase alphanumeric characters and hyphens, up to 100 characters).",
+      "kind": "Resource format filter: course, collection, tutorial, or use-case.",
+      "audience": "Audience filter shared with the OpenAI Academy API: general, knowledge-workers, developers, leaders, educators, students, admins, or other. Claude Academy pages publish no audience, so audiences is [] on every resource.",
+      "cursor": "Opaque pagination token from nextCursor; must be sent with the same filters against the same snapshotId.",
+      "limit": "Maximum number of resources to return per page (1 to {max}, default {default})."
+    },
+    "responseHeading": "Response fields and pagination",
+    "shapeNote": "Items are sorted by ascending resource ID so pages stay deterministic within a snapshot.",
+    "response": {
+      "items": "Page of matching Resource objects ordered by ascending stable ID.",
+      "nextCursor": "Opaque cursor for the next page of results, or null when no further items match.",
+      "total": "Total number of resources in the snapshot matching the active filters.",
+      "snapshotId": "SHA-256 identifier of the snapshot serving this page."
+    },
+    "tryHeading": "Test GET /v1/resources",
+    "tryLede": "Set optional filters and run a request. Changing any filter resets pagination to the first page.",
+    "filters": {
+      "q": "Search query (q)",
+      "category": "Collection",
+      "categoryAny": "All collections",
+      "categoryUnavailable": "The collection list could not be loaded from /v1/categories. You can still run other filters.",
+      "kind": "Kind",
+      "audience": "Audience",
+      "limit": "Limit"
+    },
+    "resultsHeading": "Matching resources",
+    "resultsSummary": "Showing {count} of {total} matching resources",
+    "resultsCount": "Showing {count} matching resources",
+    "snapshotLabel": "Snapshot",
+    "empty": "No resources in the current snapshot matched these filters. Clear or broaden a filter and run the request again."
+  },
+  "resource": {
+    "title": "Fetch a single resource by ID",
+    "lede": "Fetch full metadata, the course outline or collection sections, duration, and provenance for a single resource ID.",
+    "fieldsHeading": "Resource object fields",
+    "shapeNote": "Every documented field is present in the JSON payload; unknown or unverified values are null or empty arrays.",
+    "fields": {
+      "id": "Stable identifier: ca_ followed by the first 24 lowercase hex characters of the canonical URL's SHA-256 hash.",
+      "title": "Official resource title from the public source page.",
+      "url": "Canonical public destination URL on academy.claude.com.",
+      "kind": "Resource format: course, collection, tutorial, or use-case.",
+      "categoryIds": "Slugs of the Academy collections that list this resource.",
+      "audiences": "Normalized audience values. Claude Academy pages publish no audience, so this list is empty.",
+      "tags": "Product and role labels shown on the source page, such as Claude Code or Sales.",
+      "summary": "Short description of the resource, or null when not stated on the source.",
+      "level": "Difficulty level (beginner, intermediate, or advanced), or null when the source page states none.",
+      "duration": "Object with courseMinutes (estimated time shown on the page), pathMinutes, and videoSeconds; values are never combined.",
+      "detail": "Structured notes: free-text audience, prerequisites and objectives (empty for this source), and ordered sections holding a course's lesson and quiz titles or a collection's grouped members. Lesson text is never copied.",
+      "media": "Always []: course videos, audio, and documents are never copied or referenced.",
+      "artwork": "The page's own share image: url (HTTPS image on academy.claude.com under /og/), alt (text or null), and sourceUrl (the resource page). Hotlinked from the official site, never re-hosted; null when the page has no image of its own.",
+      "provenance": "Source URLs (the page and any collections listing it), UTC fetch timestamp, normalized metadata SHA-256 hash, and collection method (crawler, manual, or fixture)."
+    },
+    "tryHeading": "Inspect a resource by ID",
+    "idLabel": "Resource ID",
+    "idHint": "Enter a ca_ resource ID, or select a resource from the Resources page to populate this request.",
+    "viewHeading": "Parsed resource summary",
+    "view": {
+      "officialUrl": "Public resource URL",
+      "id": "Resource ID",
+      "kind": "Kind",
+      "level": "Level",
+      "categories": "Collections",
+      "duration": "Duration",
+      "courseMinutes": "Estimated time",
+      "pathMinutes": "Learning path duration",
+      "videoSeconds": "Video duration",
+      "tags": "Tags",
+      "unknown": "Not recorded",
+      "detailAudience": "Intended audience",
+      "prerequisites": "Prerequisites",
+      "objectives": "Learning objectives",
+      "sections": "Outline",
+      "provenance": "Provenance",
+      "fetchedAt": "Fetched (UTC)",
+      "method": "Collection method",
+      "contentHash": "Content hash",
+      "sourceUrls": "Source URLs"
+    }
+  },
+  "categories": {
+    "title": "List collections",
+    "lede": "Retrieve the collection slugs, display labels, and resource counts present in the current snapshot. Each Academy collection is one category.",
+    "responseHeading": "Response fields",
+    "shapeNote": "Pass any category id as the category query parameter on GET /v1/resources to list the resources in that collection.",
+    "response": {
+      "items": "List of collections present in the active snapshot.",
+      "id": "Lowercase slug used as the category query parameter on /v1/resources.",
+      "label": "Collection title from its public Academy page.",
+      "count": "Number of indexed resources the collection lists in the current snapshot.",
+      "snapshotId": "SHA-256 identifier of the snapshot serving these counts."
+    },
+    "tryHeading": "Test GET /v1/categories",
+    "resultsHeading": "Collections in the current snapshot",
+    "columns": {
+      "label": "Collection",
+      "id": "Slug (id)",
+      "count": "Indexed resources"
+    },
+    "empty": "No collections are recorded in the current snapshot."
+  },
+  "status": {
+    "title": "Snapshot freshness and coverage status",
+    "lede": "Check whether the active snapshot is fresh, stale, or unavailable, along with refresh timestamps and per-collection coverage.",
+    "fieldsHeading": "Status and coverage fields",
+    "fields": {
+      "freshness": "Snapshot state: fresh, stale, or unavailable. Reports stale when the snapshot is older than 7 days, coverage is incomplete, the latest refresh failed, or the server fell back to a prior snapshot after a read error.",
+      "resourceCount": "Total number of validated resources in the active snapshot.",
+      "coverage": "Per-collection records reporting categoryId, state (complete, partial, or not-collected), discovered count (member links on the collection page), and collected count."
+    },
+    "note": "The response also reports snapshotId (active SHA-256 hash or null) and UTC timestamps for generatedAt, lastAttemptAt, and lastSuccessAt; failed refreshes keep serving the last validated snapshot.",
+    "tryHeading": "Test GET /v1/status",
+    "resultsHeading": "Top-level status fields",
+    "columns": {
+      "field": "Field",
+      "value": "Value"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "lede": "No documentation page matches this URL path."
+  },
+  "theme": {
+    "toggleToLight": "Switch to light mode",
+    "toggleToDark": "Switch to dark mode"
+  },
+  "code": {
+    "enableWrap": "Wrap lines",
+    "disableWrap": "Unwrap lines",
+    "previewTruncated": "Showing the first {shown} of {total} lines. Copy still copies the full response."
+  },
+  "home": {
+    "authorNote": "I built this to share with portfolio companies and internal teams, so they can build learning resources for their own teams. Browse it here, or use the API to pull the catalog into your own tools, with links back to the official pages.",
+    "authorByline": "Dominic Phillips",
+    "catalogHeading": "Search the catalog",
+    "searchLabel": "Search titles, summaries, and tags",
+    "searchAction": "Search",
+    "inspect": "View API record",
+    "loadMore": "Load more",
+    "empty": "No resources match this search or collection. Try different keywords or another collection.",
+    "clearFilters": "Clear filters"
+  }
+}

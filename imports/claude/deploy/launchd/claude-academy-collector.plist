@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Example daily collector job. Replace the /path/to placeholders before loading it. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.example.claude-academy-collector</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/env</string>
+    <string>-i</string>
+    <string>PATH=/usr/bin:/bin</string>
+    <string>HOME=/path/to/home</string>
+    <string>LANG=en_US.UTF-8</string>
+    <string>/path/to/claude-academy-api/.venv/bin/claude-academy-collector</string>
+    <string>--snapshot</string>
+    <string>/path/to/state/snapshot.json</string>
+    <string>--state-dir</string>
+    <string>/path/to/state/collector</string>
+    <string>run</string>
+    <string>--live</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>4</integer>
+    <key>Minute</key>
+    <integer>47</integer>
+  </dict>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>Umask</key>
+  <integer>63</integer>
+  <key>StandardOutPath</key>
+  <string>/path/to/state/logs/collector.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/path/to/state/logs/collector.stderr.log</string>
+</dict>
+</plist>

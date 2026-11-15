@@ -1,0 +1,83 @@
+{
+  "fixtureOnly": "The example resource is synthetic. Import it with method fixture into temporary storage only. No source page is fetched.",
+  "commands": {
+    "serve": [
+      "uv",
+      "run",
+      "claude-academy-api",
+      "--snapshot",
+      "data/snapshot.json",
+      "--frontend-dir",
+      "frontend/dist",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "8000"
+    ],
+    "validateFixture": [
+      "uv",
+      "run",
+      "claude-academy-collector",
+      "validate",
+      "examples/collection.fixture.json"
+    ],
+    "importFixture": [
+      "uv",
+      "run",
+      "claude-academy-collector",
+      "--snapshot",
+      "/tmp/claude-academy-example/snapshot.json",
+      "import",
+      "examples/collection.fixture.json",
+      "--method",
+      "fixture"
+    ],
+    "parseSavedPage": [
+      "uv",
+      "run",
+      "claude-academy-collector",
+      "parse",
+      "tests/fixtures/pages/courses__claude-code-101.html",
+      "--url",
+      "https://academy.claude.com/courses/claude-code-101"
+    ],
+    "discover": [
+      "uv",
+      "run",
+      "claude-academy-collector",
+      "discover",
+      "--live"
+    ],
+    "livePass": [
+      "uv",
+      "run",
+      "claude-academy-collector",
+      "--snapshot",
+      "data/snapshot.json",
+      "--state-dir",
+      "data/collector",
+      "run",
+      "--live"
+    ],
+    "validateSnapshot": [
+      "uv",
+      "run",
+      "claude-academy-collector",
+      "validate-snapshot",
+      "data/snapshot.json"
+    ],
+    "purgeCache": [
+      "uv",
+      "run",
+      "claude-academy-collector",
+      "purge-cache",
+      "--live"
+    ],
+    "regenerateSchemas": [
+      "uv",
+      "run",
+      "python",
+      "scripts/generate_schemas.py"
+    ]
+  }
+}
