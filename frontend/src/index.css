@@ -1,0 +1,335 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Self-hosted DeployedWork faces; OFL notices ship beside the files in /docs/fonts/. */
+@font-face {
+    font-family: 'Geist';
+    src: url('/fonts/geist-latin.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('/fonts/ibm-plex-mono-latin.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --color-body: var(--body);
+    --color-edge: var(--edge);
+    --color-signal: var(--signal);
+    --color-signal-deep: var(--signal-deep);
+    --color-signal-foreground: var(--signal-foreground);
+    --color-signal-soft: var(--signal-soft);
+    --color-code: var(--code);
+    --color-code-foreground: var(--code-foreground);
+    --color-code-muted: var(--code-muted);
+    --color-code-rule: var(--code-rule);
+    /* Inline labels 4px, controls 8px, panels 12px. */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+}
+
+/*
+ * Light: DeployedWork paper, white sheets, ink text and rules, one blue signal for the active route
+ * and links. Dark: graphite surfaces with the same roles. Code panels are graphite in both themes;
+ * every syntax colour is 7:1 or better on its panel, body text 7.7:1 or better on its surface.
+ */
+:root {
+    --background: #FAF9F6;
+    --foreground: #272C32;
+    --body: #363B41;
+    --card: #FFFFFF;
+    --card-foreground: #272C32;
+    --popover: #FFFFFF;
+    --popover-foreground: #272C32;
+    --primary: #272C32;
+    --primary-foreground: #FFFFFF;
+    --secondary: #EFEEE9;
+    --secondary-foreground: #272C32;
+    --muted: #EFEEE9;
+    --muted-foreground: #4A5058;
+    --accent: #EBF0FC;
+    --accent-foreground: #272C32;
+    --destructive: #AD1F3D;
+    --border: #DEDCD4;
+    --input: #7A8088;
+    --ring: #2B5FD9;
+    --signal: #2B5FD9;
+    --signal-deep: #1E46A8;
+    --signal-foreground: #FFFFFF;
+    --signal-soft: #EBF0FC;
+    /* Raised panels and buttons: ink edge, hard unblurred offset. */
+    --edge: #272C32;
+    --panel-shadow: #C9C6BC;
+    --lip: #2B5FD9;
+    --lip-quiet: #C9C6BC;
+    --code: #272C32;
+    --code-foreground: #FAF9F6;
+    --code-muted: #B9BEC5;
+    --code-rule: rgb(250 249 246 / 14%);
+    --code-hover: rgb(250 249 246 / 10%);
+    --syntax-key: #A9C1FF;
+    --syntax-string: #E9C98F;
+    --syntax-number: #A6DCB0;
+    --syntax-literal: #DDB3F5;
+    --syntax-punct: #B9BEC5;
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.dark {
+    --background: #191C20;
+    --foreground: #F2F1EC;
+    --body: #DCDAD3;
+    --card: #22262B;
+    --card-foreground: #F2F1EC;
+    --popover: #262A30;
+    --popover-foreground: #F2F1EC;
+    --primary: #F2F1EC;
+    --primary-foreground: #191C20;
+    --secondary: #2C3137;
+    --secondary-foreground: #F2F1EC;
+    --muted: #2C3137;
+    --muted-foreground: #B9BEC5;
+    --accent: #333C4D;
+    --accent-foreground: #F2F1EC;
+    --destructive: #F48A9C;
+    --border: #3A3F46;
+    --input: #858B93;
+    --ring: #8DAEFF;
+    --signal: #8DAEFF;
+    --signal-deep: #B8CCFF;
+    --signal-foreground: #191C20;
+    --signal-soft: #333C4D;
+    --edge: #7A8088;
+    --panel-shadow: #0B0C0E;
+    --lip: #8DAEFF;
+    --lip-quiet: #0B0C0E;
+    --code: #121417;
+    --code-rule: rgb(255 255 255 / 10%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply font-sans;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--signal-soft);
+  }
+}
+
+@layer components {
+  /* Endpoint rail: the active route carries a signal-coloured edge, not only a tint. */
+  .rail-link {
+    display: block;
+    border-left: 2px solid transparent;
+    padding: 0.375rem 0.75rem 0.375rem 0.875rem;
+    color: var(--muted-foreground);
+    overflow-wrap: anywhere;
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+  .rail-link:hover {
+    color: var(--foreground);
+  }
+  .rail-link[aria-current="page"] {
+    border-left-color: var(--signal);
+    color: var(--foreground);
+  }
+  .rail-link[aria-current="page"] .rail-path {
+    color: var(--signal);
+  }
+  .rail-link:focus-visible {
+    outline-offset: -2px;
+  }
+  .rail-path {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    color: var(--muted-foreground);
+    overflow-wrap: anywhere;
+  }
+
+  /* Live request bench: white sheets with an ink edge and a hard stone offset. */
+  .panel-raised {
+    border: 1px solid var(--edge);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: 4px 4px 0 var(--panel-shadow);
+  }
+
+  /* DeployedWork raised button: the lip sinks on hover and disappears when pressed. */
+  .btn-raised {
+    --lift: 3px;
+    border-color: var(--edge);
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: var(--lift) var(--lift) 0 var(--lip);
+    transition: transform 120ms var(--ease), box-shadow 120ms var(--ease), background-color 120ms var(--ease);
+  }
+  .btn-raised[data-size="sm"],
+  .btn-raised[data-size="icon-sm"] {
+    --lift: 2px;
+  }
+  .btn-raised[data-variant="outline"] {
+    --lip: var(--lip-quiet);
+  }
+  .btn-raised:hover,
+  .btn-raised[aria-expanded="true"] {
+    background: var(--signal-soft);
+    transform: translate(1px, 1px);
+    box-shadow: calc(var(--lift) - 1px) calc(var(--lift) - 1px) 0 var(--lip);
+  }
+  .btn-raised[data-variant="outline"]:hover,
+  .btn-raised[data-variant="outline"][aria-expanded="true"] {
+    background: var(--muted);
+  }
+  .btn-raised:active {
+    transform: translate(var(--lift), var(--lift));
+    box-shadow: none;
+  }
+  .btn-raised:focus-visible {
+    outline-offset: calc(var(--lift) + 2px);
+  }
+  .btn-raised[aria-disabled="true"],
+  .btn-raised[aria-disabled="true"]:hover {
+    transform: none;
+    box-shadow: var(--lift) var(--lift) 0 var(--lip);
+    background: var(--card);
+  }
+
+  /* Quiet controls inside graphite code panels. */
+  .code-button {
+    color: var(--code-muted);
+  }
+  .code-button:hover,
+  .code-button[data-active="true"] {
+    background: var(--code-hover);
+    color: var(--code-foreground);
+  }
+  .code-panel :focus-visible {
+    outline-color: var(--code-foreground);
+  }
+
+  /* Code viewer: numbered lines, horizontal scroll by default, optional wrapping. */
+  .code-panel {
+    background: var(--code);
+    color: var(--code-foreground);
+  }
+  .code-view {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    tab-size: 2;
+  }
+  .code-view:focus-visible {
+    outline-offset: -2px;
+  }
+  .code-lines {
+    min-width: 100%;
+    width: max-content;
+    padding: 0.625rem 0;
+  }
+  .code-view[data-wrap="true"] .code-lines {
+    width: auto;
+  }
+  .code-line {
+    display: grid;
+    grid-template-columns: var(--gutter, 3ch) minmax(0, 1fr);
+    column-gap: 1rem;
+  }
+  .code-ln {
+    position: sticky;
+    left: 0;
+    padding-left: 0.75rem;
+    text-align: right;
+    color: var(--code-muted);
+    background: var(--code);
+    user-select: none;
+  }
+  .code-text {
+    padding-right: 1rem;
+    white-space: pre;
+  }
+  .code-view[data-wrap="true"] .code-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .tok-key,
+  .tok-command {
+    color: var(--syntax-key);
+  }
+  .tok-string {
+    color: var(--syntax-string);
+  }
+  .tok-number {
+    color: var(--syntax-number);
+  }
+  .tok-literal,
+  .tok-flag {
+    color: var(--syntax-literal);
+  }
+  .tok-punct {
+    color: var(--syntax-punct);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn-raised:hover,
+  .btn-raised:active,
+  .btn-raised[aria-expanded="true"] {
+    transform: none;
+  }
+}

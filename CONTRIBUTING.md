@@ -4,9 +4,11 @@ Contributions should preserve the read-only serving boundary, per-provider metad
 
 ## Prerequisites and setup
 
-Install Python `>=3.11` and [`uv`](https://docs.astral.sh/uv/), then sync the locked environment:
+Install Node 24 (`npm`), Python `>=3.11`, and [`uv`](https://docs.astral.sh/uv/). Build the frontend before syncing the Python environment, because the wheel/sdist packages `frontend/dist`:
 
 ```bash
+npm ci --prefix frontend
+npm run build --prefix frontend
 uv sync --frozen
 ```
 
@@ -26,9 +28,12 @@ Do not commit generated `data/*.json` snapshots or full saved HTML pages from pr
 
 ## Required checks before opening a pull request
 
-Run the linter, formatter check, schema generator, and test suite locally (CI runs against Python 3.11 and 3.13):
+Run the frontend checks, Python linter, formatter check, schema generator, and test suite locally (CI runs against Python 3.11 and 3.13):
 
 ```bash
+npm run typecheck --prefix frontend
+npm run lint --prefix frontend
+npm run copy:check --prefix frontend -- --strict
 uv run ruff check .
 uv run ruff format --check .
 uv run python scripts/generate_schemas.py

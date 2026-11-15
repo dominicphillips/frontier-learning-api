@@ -5,7 +5,7 @@ from typing import Annotated, get_args
 
 from fastapi import APIRouter, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 
 from . import __version__, catalog
 from .models import Audience, CategoryCount, CategoryPage, Hash, Model, Slug, Status, json_hash
@@ -15,6 +15,113 @@ CATALOG_CACHE = (
     "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800"
 )
 STATUS_CACHE = "public, max-age=300, s-maxage=86400"
+FRONTEND_HTML_CACHE = "public, max-age=3600"
+FRONTEND_FILE_CACHE = "public, max-age=86400"
+FRONTEND_ASSET_CACHE = "public, max-age=31536000, immutable"
+FRONTEND_CSP = (
+    "default-src 'none'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
+    "script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; "
+    "img-src 'self' data:; connect-src 'self'; form-action 'none'"
+)
+DOC_PAGES = ("/docs", "/docs/resources", "/docs/resource", "/docs/categories", "/docs/status")
+SWAGGER_PATHS = ("/docs/api", "/docs/api/oauth2-redirect")
+
+
+def frontend_root(frontend_dir: Path | str | None) -> Path | None:
+    if frontend_dir is None:
+        package = Path(__file__).resolve().parent
+        candidates = [package / "web"]
+        if package.parent.name == "src" and (package.parent.parent / "pyproject.toml").is_file():
+            candidates.append(package.parent.parent / "frontend" / "dist")
+        frontend_dir = next((path for path in candidates if (path / "index.html").is_file()), None)
+        if frontend_dir is None:
+            return None
+    root = Path(frontend_dir).resolve(strict=True)
+    index = (root / "index.html").resolve()
+    if not root.is_dir() or not index.is_file() or not index.is_relative_to(root):
+        raise ValueError("Frontend directory must contain index.html")
+    if any(part.startswith(".") for part in index.relative_to(root).parts):
+        raise ValueError("Frontend directory must contain index.html")
+    return root
+
+
+def mount_frontend(app: FastAPI, root: Path, specs: dict[str, catalog.ProviderSpec]) -> None:
+    for spec in specs.values():
+        for path in (
+            spec.store.path.parent,
+            spec.store.path,
+            spec.store.state_path,
+            spec.store.previous_path,
+        ):
+            if path.resolve().is_relative_to(root):
+                raise ValueError("Snapshot must be outside the frontend directory")
+
+    def document(document_path: str):
+        parts = document_path.split("/")
+        if any(
+            not part
+            or part.startswith(".")
+            or "\\" in part
+            or any(ord(char) < 32 or ord(char) == 127 for char in part)
+            for part in parts
+        ):
+            raise fail(404, "not-found")
+        try:
+            target = (root / document_path).resolve()
+            relative = target.relative_to(root)
+        except (OSError, RuntimeError, ValueError):
+            raise fail(404, "not-found") from None
+        if not target.is_file() or any(part.startswith(".") for part in relative.parts):
+            raise fail(404, "not-found")
+        headers = {"Cache-Control": FRONTEND_FILE_CACHE}
+        if target.suffix == ".html":
+            headers = {
+                "Cache-Control": FRONTEND_HTML_CACHE,
+                "Content-Security-Policy": FRONTEND_CSP,
+            }
+        elif parts[0] == "assets" and re.search(r"-[A-Za-z0-9_-]{8,}\.[a-zA-Z0-9]+$", target.name):
+            headers["Cache-Control"] = FRONTEND_ASSET_CACHE
+        return FileResponse(target, headers=headers)
+
+    def page():
+        return document("index.html")
+
+    for path in DOC_PAGES:
+        app.add_api_route(path, page, methods=["GET", "HEAD"], include_in_schema=False)
+
+    @app.api_route(
+        "/docs/resources/{resource_id}", methods=["GET", "HEAD"], include_in_schema=False
+    )
+    def resource_page(resource_id: str):
+        if not re.fullmatch(r"(?:oa|ca|ga)_[a-f0-9]{24}", resource_id):
+            raise fail(404, "not-found")
+        return page()
+
+    def asset(request: Request):
+        return document(request.url.path.removeprefix("/docs/"))
+
+    reserved = {
+        "api",
+        "resources",
+        "resource",
+        "categories",
+        "status",
+        "v1",
+        "health",
+        "docs",
+        "reference",
+        "redoc",
+        "openapi.json",
+    }
+    for entry in sorted(root.iterdir()):
+        if entry.name in reserved or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", entry.name):
+            continue
+        path = (
+            f"/docs/{entry.name}/{{document_path:path}}"
+            if entry.is_dir()
+            else f"/docs/{entry.name}"
+        )
+        app.add_api_route(path, asset, methods=["GET", "HEAD"], include_in_schema=False)
 
 
 class Cursor(Model):
@@ -178,9 +285,16 @@ def provider_router(spec: catalog.ProviderSpec) -> APIRouter:
     return router
 
 
-def create_app(data_dir: Path | str) -> FastAPI:
+def create_app(data_dir: Path | str, frontend_dir: Path | str | None = None) -> FastAPI:
     specs = catalog.providers(Path(data_dir))
-    app = FastAPI(title="Frontier Learning API", version=__version__, redoc_url=None, debug=False)
+    app = FastAPI(
+        title="Frontier Learning API",
+        version=__version__,
+        docs_url=SWAGGER_PATHS[0],
+        swagger_ui_oauth2_redirect_url=SWAGGER_PATHS[1],
+        redoc_url=None,
+        debug=False,
+    )
     app.state.providers = specs
     app.add_middleware(
         CORSMiddleware,
@@ -202,8 +316,8 @@ def create_app(data_dir: Path | str) -> FastAPI:
             "application/json" in response.headers.get("Content-Type", "")
             or response.status_code == 304
         ):
-            response.headers["Content-Security-Policy"] = (
-                "default-src 'none'; frame-ancestors 'none'"
+            response.headers.setdefault(
+                "Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'"
             )
         elif "text/html" in response.headers.get("Content-Type", ""):
             response.headers["Content-Security-Policy"] = (
@@ -211,6 +325,8 @@ def create_app(data_dir: Path | str) -> FastAPI:
                 "script-src https://cdn.jsdelivr.net 'unsafe-inline'; "
                 "style-src https://cdn.jsdelivr.net 'unsafe-inline'; "
                 "img-src 'self' data: https://fastapi.tiangolo.com; connect-src 'self'"
+                if request.url.path in SWAGGER_PATHS
+                else FRONTEND_CSP
             )
         if request.url.scheme == "https":
             response.headers["Strict-Transport-Security"] = "max-age=31536000"
@@ -233,6 +349,7 @@ def create_app(data_dir: Path | str) -> FastAPI:
         )
 
     @app.get("/", include_in_schema=False)
+    @app.get("/reference", include_in_schema=False)
     def root():
         return RedirectResponse("/docs", status_code=307)
 
@@ -357,4 +474,7 @@ def create_app(data_dir: Path | str) -> FastAPI:
 
     for spec in specs.values():
         app.include_router(provider_router(spec))
+    static_root = frontend_root(frontend_dir)
+    if static_root is not None:
+        mount_frontend(app, static_root, specs)
     return app

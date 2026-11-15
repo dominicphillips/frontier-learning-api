@@ -44,7 +44,7 @@ Keep code and tests aligned with `schema/openapi.json` and `schema/{openai,claud
 ## Authority, Verification, and Failures
 
 - **Execute directly:** Run authorized development and verification commands offline:
-  - Setup & checks: `uv sync --frozen`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest`
+  - Setup & checks (requires Node 24/`npm` because `frontend/dist` is packaged in the wheel/sdist): `npm ci --prefix frontend`, `npm run build --prefix frontend`, `uv sync --frozen`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest`
   - Schema generation: `uv run python scripts/generate_schemas.py`
   - Offline fixture validation and import (use temporary snapshot paths or untracked `data/{openai,claude,gemini}.json` for local dev):
     `uv run frontier-learning-collect --provider <provider> validate examples/<provider>/collection.fixture.json`

@@ -1,0 +1,288 @@
+{
+  "app": {
+    "name": "Frontier Learning API",
+    "documentTitle": "{page} — {site}"
+  },
+  "nav": {
+    "sectionsLabel": "API documentation",
+    "externalLabel": "External links",
+    "skipToContent": "Skip to content",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "overview": "Overview",
+    "resources": "Resources",
+    "resourceDetail": "Resource detail",
+    "categories": "Categories",
+    "status": "Status",
+    "github": "GitHub",
+    "openapi": "OpenAPI spec",
+    "health": "Health check",
+    "apiExplorer": "Swagger UI",
+    "primaryLabel": "Main",
+    "courses": "Catalog",
+    "reference": "API reference"
+  },
+  "footer": {
+    "independence": "Independent open-source DeployedWork project. Not affiliated with or endorsed by OpenAI, Anthropic, or Google, and not an access or provisioning service.",
+    "madeBy": "Built by"
+  },
+  "actions": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Copy failed",
+    "run": "Run request",
+    "running": "Running…",
+    "runAgain": "Run again",
+    "retry": "Retry",
+    "nextPage": "Next page",
+    "resetFilters": "Reset filters",
+    "openOfficial": "Open resource",
+    "backHome": "Back to overview"
+  },
+  "labels": {
+    "baseUrl": "Base URL",
+    "curl": "curl",
+    "shape": "Response shape",
+    "response": "Response body",
+    "requestUrl": "Request URL",
+    "route": "Route",
+    "provider": "Provider",
+    "providerAny": "All providers"
+  },
+  "request": {
+    "idle": "Run the request to inspect the live response from the current snapshot.",
+    "loading": "Requesting live response…",
+    "failed": "The request did not complete. Check your connection and retry.",
+    "statusLine": "HTTP {status} in {ms} ms",
+    "emptyBody": "(Empty response body)"
+  },
+  "errors": {
+    "badRequest": "The cursor is invalid or does not match the active filters. Run the query again from the first page.",
+    "notFound": "No resource matched this ID in the current snapshot. Check the ID or list resources to copy a valid oa_, ca_, or ga_ ID.",
+    "obsoleteSnapshot": "The snapshot changed while paging. Run the query again without a cursor to read from the current snapshot.",
+    "noSnapshot": "A required provider snapshot is unavailable. Check /v1/status to see which providers are ready, query a healthy /v1/providers/{provider}/* route, or retry later.",
+    "unexpected": "The request returned an error. If status is 422, check your query parameters against the documented limits in the response body; otherwise retry."
+  },
+  "units": {
+    "minutes": "{minutes} min",
+    "seconds": "{seconds} sec",
+    "minutesSeconds": "{minutes} min {seconds} sec"
+  },
+  "overview": {
+    "title": "Query public AI learning resources across OpenAI, Anthropic, and Google",
+    "lede": "Read-only JSON endpoints for searching and inspecting indexed public courses, learning paths, tutorials, labs, videos, and articles from OpenAI Academy, Claude Academy, and Google Skills without an API key.",
+    "baseUrlHeading": "Base URL and authentication",
+    "baseUrlLede": "All endpoints are public read-only GET routes under this origin and require no API key or bearer token.",
+    "quickStartHeading": "Fetch your first page of resources",
+    "quickStartLede": "Run this curl command in your terminal to retrieve up to five indexed learning resources.",
+    "endpointsHeading": "Available GET endpoints",
+    "endpointsLede": "Select an aggregate catalog or status route to view its parameters and response schema, or open the operational routes directly.",
+    "endpointColumnPath": "Route",
+    "endpointColumnDescription": "Description",
+    "providerEndpointsHeading": "Provider-scoped GET endpoints",
+    "providerEndpointsLede": "Query a single provider under /v1/providers/{provider}/* for its native resource and category shapes without a provider field, with plain category slugs and that provider's kind enum.",
+    "providersHeading": "Indexed providers and ID prefixes",
+    "providersLede": "Each provider uses a stable resource ID prefix, canonical public source domain, and source-specific kind values.",
+    "providerColumns": {
+      "provider": "Provider",
+      "prefix": "ID prefix",
+      "source": "Public source",
+      "kinds": "Allowed kinds"
+    },
+    "tryHeading": "Send a live GET request",
+    "tryLede": "Choose an endpoint to query the current local snapshot directly from your browser.",
+    "endpointLabel": "Endpoint",
+    "conventionsHeading": "Snapshot, schema, and scope rules",
+    "conventions": {
+      "readOnly": "Snapshot-backed reads: Every request reads a validated local snapshot and never triggers a live crawl, source fetch, or model call.",
+      "scopes": "Aggregate and provider shapes: Aggregate /v1/* routes add provider and namespace categoryIds as provider:slug, while /v1/providers/{provider}/* routes keep native source shapes; projection never alters provenance.contentHash, sourceUrls, fetchedAt, or method.",
+      "cursors": "Snapshot-scoped pagination: Results are ordered by ID hash suffix with a full-ID tie-breaker; cursors bind to your active filters and snapshotId, returning 400 on filter mismatch or 409 if any underlying snapshot changed.",
+      "nulls": "Explicit empty values: Responses use camelCase and keep all documented fields present, returning null or [] when a fact is unverified or absent on the source page.",
+      "durations": "Distinct duration units: duration.courseMinutes, duration.pathMinutes, and duration.videoSeconds measure different scopes and are never summed or converted into one another.",
+      "sources": "Canonical source links: Each resource ID (oa_, ca_, or ga_ plus 24 hex characters) hashes its canonical public provider URL, and url plus provenance.sourceUrls link directly to the original pages.",
+      "notExposed": "Catalog metadata only: The API does not host course bodies or videos, provision accounts, enroll learners, track progress, or grant media redistribution rights (media is [] unless explicit reuse permission is recorded).",
+      "availability": "Partial availability: Aggregate list routes (/v1/resources and /v1/categories) and /health/ready return 503 only when a provider has no usable snapshot, while /v1/status, /v1/providers, /health, /v1/resources/{id} for healthy providers, and healthy /v1/providers/{provider}/* routes still return 200. If a refresh fails validation, the server keeps serving the last valid snapshot and reports stale.",
+      "caching": "HTTP caching: Successful catalog GET responses set 24-hour caching with a weak ETag and return 304 on matching If-None-Match; status routes set a 5-minute browser recheck, and error responses set Cache-Control: no-store."
+    },
+    "linksHeading": "Machine-readable specs and source code",
+    "linksLede": "Open the interactive Swagger UI, inspect the OpenAPI 3.1 schema, check server health, or view the repository."
+  },
+  "endpoints": {
+    "listResources": "Filter and paginate indexed learning resources across providers by provider, keyword, category, kind, or audience.",
+    "getResource": "Fetch full metadata, curriculum sections, durations, and provenance for one oa_, ca_, or ga_ resource ID.",
+    "categories": "List indexed categories with their namespaced IDs (provider:slug), providers, slugs, display labels, and current resource counts.",
+    "status": "Check aggregate snapshot state, total resource count, and per-provider freshness, refresh timestamps, and category coverage.",
+    "providers": "List configured providers with their source URLs, ID prefixes, supported kinds, and current snapshot status.",
+    "providerResources": "Filter and paginate one provider's native resources by q, plain category slug, provider-specific kind, or audience.",
+    "providerResource": "Fetch one provider's native resource record by ID; returns 404 unless the ID matches that provider's prefix and exists.",
+    "providerCategories": "List one provider's categories with plain slug IDs, display labels, resource counts, and snapshotId.",
+    "providerStatus": "Check one provider's snapshot state, snapshotId, refresh timestamps, resourceCount, and category coverage.",
+    "health": "Liveness check returning HTTP 200 and status ok when the server process is up.",
+    "ready": "Readiness check returning 200 when every provider has a usable snapshot, or 503 when any provider is unavailable.",
+    "openapi": "OpenAPI 3.1 specification for all public routes and response schemas."
+  },
+  "resources": {
+    "title": "List and filter learning resources",
+    "lede": "Search the current snapshot across OpenAI, Anthropic, and Google by provider, keyword, namespaced category, kind, or target audience with deterministic cursor pagination.",
+    "paramsHeading": "Query parameters",
+    "params": {
+      "provider": "Provider filter on GET /v1/resources only: openai, claude, or gemini (included in the 5-key cursor filter hash).",
+      "q": "Case-insensitive text search across resource titles, summaries, and tags (up to 200 characters).",
+      "category": "Namespaced category ID from GET /v1/categories in provider:slug format (openai, claude, or gemini prefix plus lowercase alphanumeric slug, up to 107 characters).",
+      "kind": "Resource format filter: course, learning-path, article, video, event, collection, external, tutorial, use-case, or lab.",
+      "audience": "Target audience filter: general, knowledge-workers, developers, leaders, educators, students, admins, or other.",
+      "cursor": "Opaque pagination token from nextCursor; must be sent with the same filters against the same snapshotId.",
+      "limit": "Maximum number of resources to return per page (1 to {max}, default {default})."
+    },
+    "responseHeading": "Response fields and pagination",
+    "shapeNote": "Items include a provider field (openai, claude, or gemini) and are sorted by ascending 24-character ID hash suffix with a full-ID tie-breaker so pages stay deterministic within a snapshot.",
+    "response": {
+      "items": "Page of matching Resource objects ordered by ID hash suffix and full ID.",
+      "nextCursor": "Opaque cursor for the next page of results, or null when no further items match.",
+      "total": "Total number of resources in the snapshot matching the active filters.",
+      "snapshotId": "SHA-256 identifier of the combined multi-provider snapshot serving this page."
+    },
+    "scoped": {
+      "heading": "Provider-scoped resource lists",
+      "lede": "Query GET /v1/providers/{provider}/resources to list one provider's native records ordered by ascending resource ID.",
+      "provider": "Omitted on provider-route records because the provider is fixed by the /v1/providers/{provider}/* path.",
+      "categoryIds": "Plain category slugs from GET /v1/providers/{provider}/categories; pass a plain slug to the category query parameter.",
+      "kind": "Restricted to that provider's supported kind values; passing a kind that provider does not support returns 422.",
+      "cursor": "Bound to that provider's snapshotId and 4-key filter hash (q, category, kind, audience); not interchangeable with aggregate cursors."
+    },
+    "tryHeading": "Test GET /v1/resources",
+    "tryLede": "Set optional filters and run a request. Changing any filter resets pagination to the first page.",
+    "filters": {
+      "q": "Search query (q)",
+      "category": "Category",
+      "categoryAny": "All categories",
+      "categoryUnavailable": "Category list could not be loaded from the categories endpoint. You can still run other filters.",
+      "kind": "Kind",
+      "audience": "Audience",
+      "limit": "Limit"
+    },
+    "resultsHeading": "Matching resources",
+    "resultsSummary": "Showing {count} of {total} matching resources",
+    "resultsCount": "Showing {count} matching resources",
+    "snapshotLabel": "Snapshot",
+    "empty": "No resources in the current snapshot matched these filters. Clear or broaden a filter and run the request again."
+  },
+  "resource": {
+    "title": "Fetch a single resource by ID",
+    "lede": "Fetch full metadata, structured curriculum sections, distinct durations, and provenance for a single resource ID.",
+    "fieldsHeading": "Resource object fields",
+    "shapeNote": "Every documented field is present in the JSON payload; unknown or unverified values are null or empty arrays.",
+    "fields": {
+      "id": "Stable identifier: oa_ (OpenAI), ca_ (Claude), or ga_ (Gemini) followed by the first 24 lowercase hex characters of the canonical URL's SHA-256 hash.",
+      "provider": "Provider key (openai, claude, or gemini); included on aggregate /v1/* resource responses and omitted on /v1/providers/{provider}/*.",
+      "title": "Official resource title from the public source page.",
+      "url": "Canonical public destination URL on academy.openai.com, academy.claude.com, or www.skills.google.",
+      "kind": "Resource format: course, learning-path, article, video, event, collection, external, tutorial, use-case, or lab.",
+      "categoryIds": "Namespaced category IDs (provider:slug) from /v1/categories that include this resource.",
+      "audiences": "Normalized audience tags such as developers, knowledge-workers, leaders, or general.",
+      "tags": "Topic and skill tags recorded from the source page.",
+      "summary": "Short description of the resource, or null when not stated on the source.",
+      "level": "Difficulty level (beginner, intermediate, or advanced), or null when unspecified.",
+      "duration": "Object with separate courseMinutes, pathMinutes, and videoSeconds fields; values are never combined.",
+      "detail": "Structured learning notes containing free-text audience, prerequisites, objectives, and ordered curriculum sections.",
+      "media": "Permitted external media references with evidence URLs; empty unless reuse permission is documented.",
+      "artwork": "Public cover image metadata: url (hotlinked source image URL for OpenAI and Claude), alt (text or null), and sourceUrl (a source page listed in provenance.sourceUrls). Always null for Gemini or when no cover is recorded; unlike media, it carries no reuse permission.",
+      "provenance": "Source URLs, UTC fetch timestamp, normalized provider metadata SHA-256 hash (unchanged by aggregate projection), and collection method (manual, fixture, crawler, or managed-agent)."
+    },
+    "tryHeading": "Inspect a resource by ID",
+    "idLabel": "Resource ID",
+    "idHint": "Enter an oa_, ca_, or ga_ resource ID, or select a resource from the Resources page to populate this request.",
+    "viewHeading": "Parsed resource summary",
+    "view": {
+      "officialUrl": "Public resource URL",
+      "id": "Resource ID",
+      "provider": "Provider",
+      "kind": "Kind",
+      "level": "Level",
+      "categories": "Categories",
+      "duration": "Duration",
+      "courseMinutes": "Course duration",
+      "pathMinutes": "Learning path duration",
+      "videoSeconds": "Video duration",
+      "tags": "Tags",
+      "unknown": "Not recorded",
+      "detailAudience": "Intended audience",
+      "prerequisites": "Prerequisites",
+      "objectives": "Learning objectives",
+      "sections": "Sections",
+      "provenance": "Provenance",
+      "fetchedAt": "Fetched (UTC)",
+      "method": "Collection method",
+      "contentHash": "Content hash",
+      "sourceUrls": "Source URLs"
+    }
+  },
+  "categories": {
+    "title": "List indexed resource categories",
+    "lede": "Retrieve the namespaced category IDs (provider:slug), provider keys, native slugs, display labels, and resource counts present in the current snapshot.",
+    "responseHeading": "Response fields",
+    "shapeNote": "Pass any category id (provider:slug) as the category query parameter on GET /v1/resources to filter resources in that category, or pass optional ?provider= on GET /v1/categories to scope the list.",
+    "response": {
+      "items": "List of categories present in the active snapshot (each with id, provider, slug, label, and count).",
+      "id": "Namespaced identifier (provider:slug) used as the category query parameter on /v1/resources.",
+      "provider": "Provider key (openai, claude, or gemini) on aggregate /v1/categories items; omitted on provider-scoped category routes.",
+      "slug": "Un-namespaced category slug on aggregate /v1/categories items (where id is provider:slug).",
+      "label": "Human-readable category name from the public provider directory.",
+      "count": "Number of indexed resources assigned to this category in the current snapshot.",
+      "snapshotId": "SHA-256 identifier of the combined multi-provider snapshot (or single-provider snapshot on provider routes) serving these counts."
+    },
+    "tryHeading": "Test GET /v1/categories",
+    "resultsHeading": "Categories in current snapshot",
+    "columns": {
+      "label": "Category",
+      "provider": "Provider",
+      "id": "Category ID (provider:slug)",
+      "count": "Indexed resources"
+    },
+    "empty": "No categories are recorded in the current snapshot."
+  },
+  "status": {
+    "title": "Snapshot freshness and coverage status",
+    "lede": "Check whether the aggregate catalog and each provider snapshot are fresh, stale, or unavailable, along with refresh timestamps and per-category collection coverage.",
+    "fieldsHeading": "Status and coverage fields",
+    "fields": {
+      "freshness": "Catalog state (state): fresh, stale, or unavailable. Reports stale when any provider snapshot is older than 7 days, coverage is incomplete, the latest refresh failed, or the server fell back to a prior validated snapshot.",
+      "resourceCount": "Total number of validated resources across all providers in the active snapshot (does not imply all public provider content is indexed).",
+      "coverage": "Per-provider status under providers.{openai,claude,gemini}, each reporting state, snapshotId, generatedAt, lastAttemptAt, lastSuccessAt, resourceCount, and per-category coverage (categoryId, state, discovered, and collected).",
+      "providers": "Object keyed by openai, claude, and gemini, each holding that provider's Status object."
+    },
+    "note": "The top-level response reports state, combined snapshotId, resourceCount, and nested providers status objects; failed refreshes keep serving the last validated snapshot.",
+    "tryHeading": "Test GET /v1/status",
+    "resultsHeading": "Top-level status fields",
+    "providersHeading": "Per-provider snapshot status",
+    "coverageHeading": "Per-category coverage",
+    "columns": {
+      "provider": "Provider",
+      "field": "Field",
+      "value": "Value"
+    },
+    "providerList": {
+      "heading": "List configured providers (GET /v1/providers)",
+      "lede": "Fetch static provider metadata alongside each provider's current snapshot status in one response.",
+      "id": "Provider slug used in paths and query parameters: openai, claude, or gemini.",
+      "label": "Display name for the public learning source: OpenAI Academy, Claude Academy, or Google Skills.",
+      "sourceUrl": "Canonical public home URL for the provider's catalog.",
+      "resourcePrefix": "Three-character prefix on every resource ID from this provider: oa_, ca_, or ga_.",
+      "kinds": "Allowed kind values accepted on that provider's /v1/providers/{provider}/resources route.",
+      "status": "Nested provider status object with the same fields as GET /v1/providers/{provider}/status."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "lede": "No documentation page matches this URL path."
+  },
+  "theme": {
+    "toggleToLight": "Switch to light mode",
+    "toggleToDark": "Switch to dark mode"
+  },
+  "code": {
+    "enableWrap": "Wrap lines",
+    "disableWrap": "Unwrap lines",
+    "previewTruncated": "Showing the first {shown} of {total} lines. Copy still copies the full response."
+  }
+}

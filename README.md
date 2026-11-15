@@ -39,7 +39,7 @@ Healthy provider-scoped endpoints continue serving `200` responses even when ano
 
 ### Health, schema, and HTTP caching
 
-- **Operational and OpenAPI routes:** `GET /health`, `GET /health/ready`, `GET /docs` (Swagger UI), and `GET /openapi.json`. `GET /health/ready` returns `503` only when a provider has no usable snapshot.
+- **Operational and OpenAPI routes:** `GET /health`, `GET /health/ready`, `GET /docs` (custom interactive API reference), `GET /docs/api` (Swagger UI), and `GET /openapi.json`. `GET /health/ready` returns `503` only when a provider has no usable snapshot.
 - **Caching:** Successful catalog `GET` responses send a 24-hour `Cache-Control` policy with a weak `ETag` and return `304 Not Modified` on matching `If-None-Match` requests. Status endpoints use a 5-minute browser recheck policy, and error responses send `Cache-Control: no-store`.
 - **Optional Cloudflare cache purge:** To purge edge caches after a published snapshot update, set `FRONTIER_CLOUDFLARE_ZONE_ID`, `FRONTIER_CLOUDFLARE_HOSTNAMES` (comma-separated exact hostnames), and `FRONTIER_CLOUDFLARE_PURGE_TOKEN_FILE`. Source-specific schedulers share this configuration.
 
@@ -56,11 +56,13 @@ This service serves validated snapshots of public metadata and links back to the
 
 ## Run locally with synthetic fixtures
 
-Running the server requires Python `>=3.11` and [`uv`](https://docs.astral.sh/uv/). Production snapshot files are not committed to git; the API expects validated snapshots at `data/openai.json`, `data/claude.json`, and `data/gemini.json`.
+Running the server from a checkout requires Node 24 (`npm`), Python `>=3.11`, and [`uv`](https://docs.astral.sh/uv/). Build `frontend/dist` before running `uv sync --frozen`, because the Python wheel/sdist packages `frontend/dist`. Production snapshot files are not committed to git; the API expects validated snapshots at `data/openai.json`, `data/claude.json`, and `data/gemini.json`.
 
-Each `examples/<provider>/collection.fixture.json` file contains one synthetic resource record for local testing and CI verification (not current live catalog data). Import the three fixtures into `data/` and start the server:
+Each `examples/<provider>/collection.fixture.json` file contains one synthetic resource record for local testing and CI verification (not current live catalog data). Build the frontend, import the three fixtures into `data/`, and start the server:
 
 ```bash
+npm ci --prefix frontend
+npm run build --prefix frontend
 uv sync --frozen
 for provider in openai claude gemini; do
   uv run frontier-learning-collect --provider "$provider" --snapshot "data/${provider}.json" import "examples/${provider}/collection.fixture.json" --method fixture
@@ -68,7 +70,7 @@ done
 uv run frontier-learning-api --data-dir data --host 127.0.0.1 --port 8000
 ```
 
-Once running, query `http://127.0.0.1:8000/v1/resources` or open `http://127.0.0.1:8000/docs`.
+Pass `--frontend-dir <path>` to serve a custom built frontend directory; otherwise the server uses the packaged web directory or `frontend/dist` in a checkout. Once running, query `http://127.0.0.1:8000/v1/resources`, open `http://127.0.0.1:8000/docs` for the interactive reference, or open `http://127.0.0.1:8000/docs/api` for Swagger UI.
 
 ## Documentation, contributing, and license
 

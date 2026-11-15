@@ -175,7 +175,7 @@ def test_cache_errors_and_cors(api):
     assert options.headers["access-control-allow-origin"] == "*"
     assert client.post("/v1/resources").status_code == 405
     assert client.head("/v1/providers/openai/resources").status_code == 405
-    assert client.get("/docs").status_code == 200
+    assert client.get("/docs/api").status_code == 200
 
 
 def test_generated_openapi_matches_runtime(api):

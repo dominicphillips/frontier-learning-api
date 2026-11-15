@@ -26,6 +26,12 @@ dev = ["pytest>=9.1.1,<10", "httpx>=0.28.1,<1", "ruff>=0.17.2,<1"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/frontier_learning"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"frontend/dist" = "frontier_learning/web"
+
+[tool.hatch.build.targets.sdist.force-include]
+"frontend/dist" = "frontend/dist"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --import-mode=importlib"

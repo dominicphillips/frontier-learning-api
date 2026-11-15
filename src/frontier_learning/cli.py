@@ -6,6 +6,7 @@ from pathlib import Path
 def serve() -> None:
     parser = argparse.ArgumentParser(prog="frontier-learning-api")
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
+    parser.add_argument("--frontend-dir", type=Path)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
@@ -14,7 +15,7 @@ def serve() -> None:
     from .app import create_app
 
     uvicorn.run(
-        create_app(args.data_dir),
+        create_app(args.data_dir, args.frontend_dir),
         host=args.host,
         port=args.port,
         log_level="info",

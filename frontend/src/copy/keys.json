@@ -1,0 +1,288 @@
+{
+  "app": {
+    "name": "",
+    "documentTitle": ""
+  },
+  "nav": {
+    "sectionsLabel": "",
+    "externalLabel": "",
+    "skipToContent": "",
+    "menu": "",
+    "closeMenu": "",
+    "overview": "",
+    "resources": "",
+    "resourceDetail": "",
+    "categories": "",
+    "status": "",
+    "github": "",
+    "openapi": "",
+    "health": "",
+    "apiExplorer": "",
+    "primaryLabel": "",
+    "courses": "",
+    "reference": ""
+  },
+  "footer": {
+    "independence": "",
+    "madeBy": ""
+  },
+  "actions": {
+    "copy": "",
+    "copied": "",
+    "copyFailed": "",
+    "run": "",
+    "running": "",
+    "runAgain": "",
+    "retry": "",
+    "nextPage": "",
+    "resetFilters": "",
+    "openOfficial": "",
+    "backHome": ""
+  },
+  "labels": {
+    "baseUrl": "",
+    "curl": "",
+    "shape": "",
+    "response": "",
+    "requestUrl": "",
+    "route": "",
+    "provider": "",
+    "providerAny": ""
+  },
+  "request": {
+    "idle": "",
+    "loading": "",
+    "failed": "",
+    "statusLine": "",
+    "emptyBody": ""
+  },
+  "errors": {
+    "badRequest": "",
+    "notFound": "",
+    "obsoleteSnapshot": "",
+    "noSnapshot": "",
+    "unexpected": ""
+  },
+  "units": {
+    "minutes": "",
+    "seconds": "",
+    "minutesSeconds": ""
+  },
+  "overview": {
+    "title": "",
+    "lede": "",
+    "baseUrlHeading": "",
+    "baseUrlLede": "",
+    "quickStartHeading": "",
+    "quickStartLede": "",
+    "endpointsHeading": "",
+    "endpointsLede": "",
+    "endpointColumnPath": "",
+    "endpointColumnDescription": "",
+    "providerEndpointsHeading": "",
+    "providerEndpointsLede": "",
+    "providersHeading": "",
+    "providersLede": "",
+    "providerColumns": {
+      "provider": "",
+      "prefix": "",
+      "source": "",
+      "kinds": ""
+    },
+    "tryHeading": "",
+    "tryLede": "",
+    "endpointLabel": "",
+    "conventionsHeading": "",
+    "conventions": {
+      "readOnly": "",
+      "scopes": "",
+      "cursors": "",
+      "nulls": "",
+      "durations": "",
+      "sources": "",
+      "notExposed": "",
+      "availability": "",
+      "caching": ""
+    },
+    "linksHeading": "",
+    "linksLede": ""
+  },
+  "endpoints": {
+    "listResources": "",
+    "getResource": "",
+    "categories": "",
+    "status": "",
+    "providers": "",
+    "providerResources": "",
+    "providerResource": "",
+    "providerCategories": "",
+    "providerStatus": "",
+    "health": "",
+    "ready": "",
+    "openapi": ""
+  },
+  "resources": {
+    "title": "",
+    "lede": "",
+    "paramsHeading": "",
+    "params": {
+      "provider": "",
+      "q": "",
+      "category": "",
+      "kind": "",
+      "audience": "",
+      "cursor": "",
+      "limit": ""
+    },
+    "responseHeading": "",
+    "shapeNote": "",
+    "response": {
+      "items": "",
+      "nextCursor": "",
+      "total": "",
+      "snapshotId": ""
+    },
+    "scoped": {
+      "heading": "",
+      "lede": "",
+      "provider": "",
+      "categoryIds": "",
+      "kind": "",
+      "cursor": ""
+    },
+    "tryHeading": "",
+    "tryLede": "",
+    "filters": {
+      "q": "",
+      "category": "",
+      "categoryAny": "",
+      "categoryUnavailable": "",
+      "kind": "",
+      "audience": "",
+      "limit": ""
+    },
+    "resultsHeading": "",
+    "resultsSummary": "",
+    "resultsCount": "",
+    "snapshotLabel": "",
+    "empty": ""
+  },
+  "resource": {
+    "title": "",
+    "lede": "",
+    "fieldsHeading": "",
+    "shapeNote": "",
+    "fields": {
+      "id": "",
+      "provider": "",
+      "title": "",
+      "url": "",
+      "kind": "",
+      "categoryIds": "",
+      "audiences": "",
+      "tags": "",
+      "summary": "",
+      "level": "",
+      "duration": "",
+      "detail": "",
+      "media": "",
+      "artwork": "",
+      "provenance": ""
+    },
+    "tryHeading": "",
+    "idLabel": "",
+    "idHint": "",
+    "viewHeading": "",
+    "view": {
+      "officialUrl": "",
+      "id": "",
+      "provider": "",
+      "kind": "",
+      "level": "",
+      "categories": "",
+      "duration": "",
+      "courseMinutes": "",
+      "pathMinutes": "",
+      "videoSeconds": "",
+      "tags": "",
+      "unknown": "",
+      "detailAudience": "",
+      "prerequisites": "",
+      "objectives": "",
+      "sections": "",
+      "provenance": "",
+      "fetchedAt": "",
+      "method": "",
+      "contentHash": "",
+      "sourceUrls": ""
+    }
+  },
+  "categories": {
+    "title": "",
+    "lede": "",
+    "responseHeading": "",
+    "shapeNote": "",
+    "response": {
+      "items": "",
+      "id": "",
+      "provider": "",
+      "slug": "",
+      "label": "",
+      "count": "",
+      "snapshotId": ""
+    },
+    "tryHeading": "",
+    "resultsHeading": "",
+    "columns": {
+      "label": "",
+      "provider": "",
+      "id": "",
+      "count": ""
+    },
+    "empty": ""
+  },
+  "status": {
+    "title": "",
+    "lede": "",
+    "fieldsHeading": "",
+    "fields": {
+      "freshness": "",
+      "resourceCount": "",
+      "coverage": "",
+      "providers": ""
+    },
+    "note": "",
+    "tryHeading": "",
+    "resultsHeading": "",
+    "providersHeading": "",
+    "coverageHeading": "",
+    "columns": {
+      "provider": "",
+      "field": "",
+      "value": ""
+    },
+    "providerList": {
+      "heading": "",
+      "lede": "",
+      "id": "",
+      "label": "",
+      "sourceUrl": "",
+      "resourcePrefix": "",
+      "kinds": "",
+      "status": ""
+    }
+  },
+  "notFound": {
+    "title": "",
+    "lede": ""
+  },
+  "theme": {
+    "toggleToLight": "",
+    "toggleToDark": ""
+  },
+  "code": {
+    "enableWrap": "",
+    "disableWrap": "",
+    "previewTruncated": ""
+  }
+}
