@@ -1,0 +1,83 @@
+{
+  "fixtureOnly": "The example resource is synthetic. Import it with method fixture into temporary storage only. No source page is fetched.",
+  "commands": {
+    "serve": [
+      "uv",
+      "run",
+      "gemini-academy-api",
+      "--snapshot",
+      "data/snapshot.json",
+      "--frontend-dir",
+      "frontend/dist",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "8000"
+    ],
+    "validateFixture": [
+      "uv",
+      "run",
+      "gemini-academy-collector",
+      "validate",
+      "examples/collection.fixture.json"
+    ],
+    "importFixture": [
+      "uv",
+      "run",
+      "gemini-academy-collector",
+      "--snapshot",
+      "/tmp/gemini-academy-example/snapshot.json",
+      "import",
+      "examples/collection.fixture.json",
+      "--method",
+      "fixture"
+    ],
+    "parseSavedPage": [
+      "uv",
+      "run",
+      "gemini-academy-collector",
+      "parse",
+      "tests/fixtures/pages/course_templates__1401.html",
+      "--url",
+      "https://www.skills.google/course_templates/1401"
+    ],
+    "discover": [
+      "uv",
+      "run",
+      "gemini-academy-collector",
+      "discover",
+      "--live"
+    ],
+    "livePass": [
+      "uv",
+      "run",
+      "gemini-academy-collector",
+      "--snapshot",
+      "data/snapshot.json",
+      "--state-dir",
+      "data/collector",
+      "run",
+      "--live"
+    ],
+    "validateSnapshot": [
+      "uv",
+      "run",
+      "gemini-academy-collector",
+      "validate-snapshot",
+      "data/snapshot.json"
+    ],
+    "purgeCache": [
+      "uv",
+      "run",
+      "gemini-academy-collector",
+      "purge-cache",
+      "--live"
+    ],
+    "regenerateSchemas": [
+      "uv",
+      "run",
+      "python",
+      "scripts/generate_schemas.py"
+    ]
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "serialization": "camelCase; all documented nullable fields are present",
+  "routes": {
+    "GET /v1/resources": {
+      "query": {
+        "q": "optional text, max 200 characters",
+        "category": "optional category ID (one in-scope Google Skills learning path)",
+        "kind": "optional resource kind",
+        "audience": "optional audience value",
+        "cursor": "optional opaque cursor",
+        "limit": "integer 1..100, default 20"
+      },
+      "response": {
+        "items": [
+          "Resource"
+        ],
+        "nextCursor": null,
+        "total": 0,
+        "snapshotId": "sha256"
+      },
+      "ordering": "ascending stable resource ID",
+      "errors": {
+        "400": "invalid cursor or cursor/filter mismatch",
+        "409": "cursor belongs to a different snapshot",
+        "422": "invalid query value",
+        "503": "no valid snapshot"
+      }
+    },
+    "GET /v1/resources/{id}": {
+      "response": "Resource",
+      "errors": {
+        "404": "unknown ID",
+        "503": "no valid snapshot"
+      }
+    },
+    "GET /v1/categories": {
+      "response": {
+        "items": [
+          {
+            "id": "category ID",
+            "label": "source-backed label",
+            "count": 0
+          }
+        ],
+        "snapshotId": "sha256"
+      }
+    },
+    "GET /v1/status": {
+      "response": {
+        "state": "fresh|stale|unavailable",
+        "snapshotId": null,
+        "generatedAt": null,
+        "lastAttemptAt": null,
+        "lastSuccessAt": null,
+        "resourceCount": 0,
+        "coverage": []
+      }
+    },
+    "GET /health": {
+      "response": {
+        "status": "ok"
+      }
+    },
+    "GET /health/ready": {
+      "response": {
+        "status": "ready|unavailable"
+      }
+    },
+    "GET /openapi.json": {
+      "response": "OpenAPI 3.1 document"
+    },
+    "GET /docs": {
+      "response": "Swagger UI"
+    }
+  },
+  "Resource": {
+    "id": "ga_ plus first 24 lowercase hex characters of SHA-256 of canonical URL",
+    "title": "official title",
+    "url": "canonical https://www.skills.google public learning path, course, or lab (?parent=catalog) page",
+    "kind": "course|learning-path|lab",
+    "categoryIds": [
+      "IDs of in-scope Google Skills learning paths whose pages list this resource (<slug>-<path_id>)"
+    ],
+    "audiences": [],
+    "tags": [
+      "credential label shown on the listing or course page, such as Skill badge"
+    ],
+    "summary": null,
+    "level": "beginner|intermediate|advanced|null",
+    "duration": {
+      "courseMinutes": "estimated minutes shown on the page (courses and labs) or null",
+      "pathMinutes": "estimated minutes shown on the listing for learning paths or null",
+      "videoSeconds": null
+    },
+    "detail": {
+      "audience": null,
+      "prerequisites": [],
+      "objectives": [],
+      "sections": [
+        {
+          "title": null,
+          "context": null,
+          "units": [
+            {
+              "title": "official lesson, quiz, lab, or path member title",
+              "url": "official course unit URL, or the member resource URL",
+              "kind": "lesson|quiz|lab|course",
+              "context": null,
+              "videoCount": null
+            }
+          ]
+        }
+      ]
+    },
+    "media": "always []",
+    "provenance": {
+      "sourceUrls": [
+        "the resource page, then https://www.skills.google/catalog when present in the listing, then the learning path pages that list it"
+      ],
+      "fetchedAt": "UTC ISO 8601",
+      "contentHash": "SHA-256 of normalized resource metadata",
+      "method": "crawler|manual|fixture"
+    },
+    "artwork": "always null (Google Skills serves one generic share image for every page)"
+  },
+  "MediaReference": {
+    "note": "Reserved for contract compatibility. Resources never carry media."
+  },
+  "Category": {
+    "id": "slug of learning path title + '-' + path number",
+    "label": "learning path title from its public page"
+  },
+  "Coverage": {
+    "categoryId": "learning path category ID",
+    "state": "complete|partial|not-collected",
+    "discovered": "expected count including the path and its non-deprecated members, or null when the path page was not read",
+    "collected": 0
+  },
+  "audienceValues": [
+    "general",
+    "knowledge-workers",
+    "developers",
+    "leaders",
+    "educators",
+    "students",
+    "admins",
+    "other"
+  ],
+  "levelValues": [
+    "beginner",
+    "intermediate",
+    "advanced",
+    null
+  ],
+  "snapshotBehavior": "Public requests only read a validated local snapshot. They never crawl or fetch source pages. Failed refresh keeps the last valid snapshot. Age greater than 7 days reports stale by default.",
+  "staticServing": "Optional --frontend-dir. API routes are registered first. Fingerprinted assets are immutable; index/documents are no-cache. SPA fallback never handles /v1, /health, /openapi.json or API documentation routes.",
+  "artworkBehavior": "Google Skills serves a single generic share image across pages, so artwork is always null in this service and rejected if non-null.",
+  "conditionalRequests": {
+    "routes": [
+      "GET /v1/resources",
+      "GET /v1/resources/{id}",
+      "GET /v1/categories",
+      "GET /v1/status"
+    ],
+    "validator": "Weak ETag of the complete normalized JSON representation; If-None-Match supports weak/strong equivalents, lists and *.",
+    "notModified": "304, empty body, same ETag/cache policy; request validation and cursor checks run first.",
+    "cacheControl": "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800",
+    "statusCacheControl": "public, max-age=300, s-maxage=86400",
+    "uncached": "All HTTP errors, /health* and a /v1/status whose state is unavailable use no-store and no ETag.",
+    "cors": "If-None-Match request header permitted; ETag response header exposed; origin * without credentials.",
+    "edgeKey": "Full query string; only successful public GET catalog and status responses. No error caching.",
+    "frontend": "Catalog HTML public, max-age=3600; hashed /assets/ bundles public, max-age=31536000, immutable; other static files public, max-age=86400.",
+    "publication": "Changed representation changes ETag. The collector purges the deployment hostname from the edge cache after each publication; without a purge, shared caches may serve the previous representation, including a time-derived status state, for up to a day. Browsers may reuse a catalog response for a day, and for up to seven more days while revalidating or when the origin fails; clients that need the latest snapshot compare snapshotId from /v1/status, which browsers recheck after five minutes. A stale cursor can return 409 and must restart with unchanged filters."
+  },
+  "audienceNote": "Accepted for compatibility with the OpenAI Academy API. Google Skills pages publish no audience, so audiences is always [].",
+  "levelNote": "Google Skills maps introductory, intermediate, and advanced levels to beginner, intermediate, and advanced (else null).",
+  "collection": "Deterministic, operator-run collector: robots.txt is parsed first and checked for every URL; catalog listing pages (/catalog?page=1..) discover entries; entries matching standalone word 'gemini' (excluding [DEPRECATED] titles) and members of in-scope learning paths are selected; learning paths and courses are fetched sequentially (GET only, >= 1.1s apart); lab pages are never fetched. A path or course page that fails keeps its last record; an entry that leaves scope leaves the snapshot. No model or agent is involved."
+}
