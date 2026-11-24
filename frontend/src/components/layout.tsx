@@ -11,6 +11,7 @@ import {
   DEPLOYEDWORK_URL,
   GITHUB_URL,
   HEALTH_PATH,
+  LEARNING_PATHS_PATH,
   OPENAPI_PATH,
   RESOURCES_PATH,
   STATUS_PATH,
@@ -19,7 +20,7 @@ import { useLocation } from '@/lib/router'
 import { DOCS_ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
-export type PageKey = 'overview' | 'resources' | 'resourceDetail' | 'categories' | 'status' | 'notFound'
+export type PageKey = 'overview' | 'resources' | 'resourceDetail' | 'learningPaths' | 'categories' | 'status' | 'notFound'
 
 type ReferenceKey = Exclude<PageKey, 'notFound'>
 
@@ -28,6 +29,7 @@ const REFERENCE_SECTIONS: { key: ReferenceKey; to: string; path?: string }[] = [
   { key: 'overview', to: DOCS_ROUTES.overview },
   { key: 'resources', to: DOCS_ROUTES.resources, path: RESOURCES_PATH },
   { key: 'resourceDetail', to: DOCS_ROUTES.resource, path: `${RESOURCES_PATH}/{id}` },
+  { key: 'learningPaths', to: DOCS_ROUTES.learningPaths, path: LEARNING_PATHS_PATH },
   { key: 'categories', to: DOCS_ROUTES.categories, path: CATEGORIES_PATH },
   { key: 'status', to: DOCS_ROUTES.status, path: STATUS_PATH },
 ]

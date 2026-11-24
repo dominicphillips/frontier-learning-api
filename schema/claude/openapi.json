@@ -245,6 +245,176 @@
           }
         }
       }
+    },
+    "/v1/providers/claude/learning-paths": {
+      "get": {
+        "tags": [
+          "Claude Academy"
+        ],
+        "summary": "Learning Paths",
+        "operationId": "learning_paths_v1_providers_claude_learning_paths_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "audience",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "general",
+                    "knowledge-workers",
+                    "developers",
+                    "leaders",
+                    "educators",
+                    "students",
+                    "admins",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Audience"
+            }
+          },
+          {
+            "name": "contains",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(?:oa|ca|ga)_[a-f0-9]{24}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Contains"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderLearningPathPage"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/providers/claude/learning-paths/{resource_id}": {
+      "get": {
+        "tags": [
+          "Claude Academy"
+        ],
+        "summary": "Learning Path",
+        "operationId": "learning_path_v1_providers_claude_learning_paths__resource_id__get",
+        "parameters": [
+          {
+            "name": "resource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Resource Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderLearningPath"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -453,6 +623,134 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "LearningPath": {
+        "properties": {
+          "id": {
+            "title": "Id"
+          },
+          "provider": {
+            "title": "Provider"
+          },
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "categoryIds": {
+            "title": "Categoryids"
+          },
+          "audiences": {
+            "title": "Audiences"
+          },
+          "tags": {
+            "title": "Tags"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "stepCount": {
+            "title": "Stepcount"
+          },
+          "steps": {
+            "title": "Steps"
+          },
+          "artwork": {},
+          "provenance": {}
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "title",
+          "url",
+          "categoryIds",
+          "audiences",
+          "tags",
+          "summary",
+          "level",
+          "duration",
+          "stepCount",
+          "steps",
+          "artwork",
+          "provenance"
+        ],
+        "title": "LearningPath"
+      },
+      "LearningPathPage": {
+        "properties": {
+          "items": {
+            "title": "Items"
+          },
+          "nextCursor": {
+            "title": "Nextcursor"
+          },
+          "total": {
+            "title": "Total"
+          },
+          "snapshotId": {
+            "title": "Snapshotid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "nextCursor",
+          "total",
+          "snapshotId"
+        ],
+        "title": "LearningPathPage"
+      },
+      "LearningPathStep": {
+        "properties": {
+          "position": {
+            "title": "Position"
+          },
+          "sectionTitle": {
+            "title": "Sectiontitle"
+          },
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "resourceId": {
+            "title": "Resourceid"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "context": {
+            "title": "Context"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "position",
+          "title",
+          "url",
+          "kind"
+        ],
+        "title": "LearningPathStep"
+      },
       "MediaReference": {
         "properties": {
           "kind": {
@@ -536,6 +834,89 @@
           "status"
         ],
         "title": "Provider"
+      },
+      "ProviderLearningPath": {
+        "properties": {
+          "id": {
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "categoryIds": {
+            "title": "Categoryids"
+          },
+          "audiences": {
+            "title": "Audiences"
+          },
+          "tags": {
+            "title": "Tags"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "stepCount": {
+            "title": "Stepcount"
+          },
+          "steps": {
+            "title": "Steps"
+          },
+          "artwork": {},
+          "provenance": {}
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "url",
+          "categoryIds",
+          "audiences",
+          "tags",
+          "summary",
+          "level",
+          "duration",
+          "stepCount",
+          "steps",
+          "artwork",
+          "provenance"
+        ],
+        "title": "ProviderLearningPath"
+      },
+      "ProviderLearningPathPage": {
+        "properties": {
+          "items": {
+            "title": "Items"
+          },
+          "nextCursor": {
+            "title": "Nextcursor"
+          },
+          "total": {
+            "title": "Total"
+          },
+          "snapshotId": {
+            "title": "Snapshotid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "nextCursor",
+          "total",
+          "snapshotId"
+        ],
+        "title": "ProviderLearningPathPage"
       },
       "ProviderPage": {
         "properties": {

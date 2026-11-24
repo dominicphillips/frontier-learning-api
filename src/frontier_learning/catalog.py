@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
 from typing import Annotated, Literal
+from urllib.parse import urlsplit
 
 from pydantic import AwareDatetime, Field, StringConstraints
 
@@ -33,6 +34,7 @@ CategoryId = Annotated[
         pattern=r"^(?:openai|claude|gemini):[a-z0-9]+(?:-[a-z0-9]+)*$", max_length=107
     ),
 ]
+ResourceId = Annotated[str, StringConstraints(pattern=r"^(?:oa|ca|ga)_[a-f0-9]{24}$")]
 
 
 class Unit(Model):
@@ -70,7 +72,7 @@ class Provenance(Model):
 
 
 class Resource(Model):
-    id: Annotated[str, StringConstraints(pattern=r"^(?:oa|ca|ga)_[a-f0-9]{24}$")]
+    id: ResourceId
     provider: ProviderId
     title: Title
     url: str
@@ -89,6 +91,68 @@ class Resource(Model):
 
 class ResourcePage(Model):
     items: list[Resource]
+    next_cursor: str | None
+    total: int
+    snapshot_id: Hash
+
+
+class LearningPathStep(Model):
+    position: Annotated[int, Field(ge=1)]
+    section_title: Title | None = None
+    title: Title
+    url: str
+    kind: Literal["lesson", "quiz", "lab", "course", "collection", "tutorial", "use-case"]
+    resource_id: ResourceId | None = None
+    summary: str | None = None
+    level: Literal["beginner", "intermediate", "advanced"] | None = None
+    duration: Duration | None = None
+    context: ShortText | None = None
+
+
+class ProviderLearningPath(Model):
+    id: ResourceId
+    title: Title
+    url: str
+    kind: Literal["learning-path"] = "learning-path"
+    category_ids: list[Slug]
+    audiences: list[Audience]
+    tags: list[str]
+    summary: str | None
+    level: Literal["beginner", "intermediate", "advanced"] | None
+    duration: Duration
+    step_count: Annotated[int, Field(ge=0)]
+    steps: list[LearningPathStep]
+    artwork: Artwork | None
+    provenance: Provenance
+
+
+class ProviderLearningPathPage(Model):
+    items: list[ProviderLearningPath]
+    next_cursor: str | None
+    total: int
+    snapshot_id: Hash
+
+
+class LearningPath(Model):
+    id: ResourceId
+    provider: ProviderId
+    title: Title
+    url: str
+    kind: Literal["learning-path"] = "learning-path"
+    category_ids: list[CategoryId]
+    audiences: list[Audience]
+    tags: list[str]
+    summary: str | None
+    level: Literal["beginner", "intermediate", "advanced"] | None
+    duration: Duration
+    step_count: Annotated[int, Field(ge=0)]
+    steps: list[LearningPathStep]
+    artwork: Artwork | None
+    provenance: Provenance
+
+
+class LearningPathPage(Model):
+    items: list[LearningPath]
     next_cursor: str | None
     total: int
     snapshot_id: Hash
@@ -169,3 +233,75 @@ def project_resource(provider: str, resource) -> dict:
         "provider": provider,
         "categoryIds": [f"{provider}:{category}" for category in value["categoryIds"]],
     }
+
+
+def canonical_url_key(value: str) -> str:
+    parsed = urlsplit(value)
+    host = parsed.hostname.lower() if parsed.hostname else ""
+    return f"{host}{parsed.path.rstrip('/')}"
+
+
+def project_learning_path(
+    provider: ProviderId, resource, by_url: dict[str, object], *, aggregate: bool
+) -> dict:
+    raw = resource.model_dump(mode="json", by_alias=True)
+    steps: list[dict] = []
+    position = 0
+    for section in resource.detail.sections:
+        for unit in section.units:
+            position += 1
+            target = by_url.get(canonical_url_key(unit.url))
+            if target is not None and target.id == resource.id:
+                target = None
+            steps.append(
+                {
+                    "position": position,
+                    "sectionTitle": section.title,
+                    "title": unit.title,
+                    "url": unit.url,
+                    "kind": unit.kind,
+                    "resourceId": target.id if target is not None else None,
+                    "summary": target.summary if target is not None else None,
+                    "level": target.level if target is not None else None,
+                    "duration": (
+                        target.duration.model_dump(mode="json", by_alias=True)
+                        if target is not None
+                        else None
+                    ),
+                    "context": unit.context,
+                }
+            )
+    payload = {
+        "id": raw["id"],
+        "title": raw["title"],
+        "url": raw["url"],
+        "kind": "learning-path",
+        "categoryIds": (
+            [f"{provider}:{category}" for category in raw["categoryIds"]]
+            if aggregate
+            else raw["categoryIds"]
+        ),
+        "audiences": raw["audiences"],
+        "tags": raw["tags"],
+        "summary": raw["summary"],
+        "level": raw["level"],
+        "duration": raw["duration"],
+        "stepCount": len(steps),
+        "steps": steps,
+        "artwork": raw["artwork"],
+        "provenance": raw["provenance"],
+    }
+    if aggregate:
+        payload = {"id": payload["id"], "provider": provider} | {
+            k: v for k, v in payload.items() if k != "id"
+        }
+    return payload
+
+
+def snapshot_learning_paths(provider: ProviderId, snapshot, *, aggregate: bool) -> list[dict]:
+    by_url = {canonical_url_key(item.url): item for item in snapshot.resources}
+    return [
+        project_learning_path(provider, item, by_url, aggregate=aggregate)
+        for item in snapshot.resources
+        if item.kind == "learning-path"
+    ]

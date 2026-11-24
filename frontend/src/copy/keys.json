@@ -12,6 +12,7 @@
     "overview": "",
     "resources": "",
     "resourceDetail": "",
+    "learningPaths": "",
     "categories": "",
     "status": "",
     "github": "",
@@ -110,11 +111,15 @@
   "endpoints": {
     "listResources": "",
     "getResource": "",
+    "listLearningPaths": "",
+    "getLearningPath": "",
     "categories": "",
     "status": "",
     "providers": "",
     "providerResources": "",
     "providerResource": "",
+    "providerLearningPaths": "",
+    "providerLearningPath": "",
     "providerCategories": "",
     "providerStatus": "",
     "health": "",
@@ -216,6 +221,48 @@
       "contentHash": "",
       "sourceUrls": ""
     }
+  },
+  "learningPaths": {
+    "title": "",
+    "lede": "",
+    "tryHeading": "",
+    "tryLede": "",
+    "filters": {
+      "q": "",
+      "contains": "",
+      "containsHint": "",
+      "audience": "",
+      "limit": ""
+    },
+    "resultsHeading": "",
+    "resultsSummary": "",
+    "resultsCount": "",
+    "stepCountOne": "",
+    "stepCount": "",
+    "externalStep": "",
+    "empty": "",
+    "paramsHeading": "",
+    "params": {
+      "provider": "",
+      "q": "",
+      "audience": "",
+      "contains": "",
+      "cursor": "",
+      "limit": ""
+    },
+    "responseHeading": "",
+    "shapeNote": "",
+    "response": {
+      "items": "",
+      "stepCount": "",
+      "steps": "",
+      "stepResourceId": "",
+      "nextCursor": "",
+      "total": "",
+      "snapshotId": ""
+    },
+    "singleHeading": "",
+    "singleLede": ""
   },
   "categories": {
     "title": "",

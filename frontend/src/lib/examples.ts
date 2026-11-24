@@ -44,6 +44,48 @@ export const LIST_SHAPE = `{
   "snapshotId": "string"
 }`
 
+export const LEARNING_PATH_LIST_SHAPE = `{
+  "items": [
+    {
+      "id": "string",
+      "provider": "openai | claude | gemini",
+      "title": "string",
+      "url": "string",
+      "kind": "learning-path",
+      "categoryIds": ["provider:slug"],
+      "audiences": ["string"],
+      "tags": ["string"],
+      "summary": "string | null",
+      "level": "string | null",
+      "duration": {
+        "courseMinutes": "number | null",
+        "pathMinutes": "number | null",
+        "videoSeconds": "number | null"
+      },
+      "stepCount": "number",
+      "steps": [
+        {
+          "position": "number",
+          "sectionTitle": "string | null",
+          "title": "string",
+          "url": "string",
+          "kind": "string",
+          "resourceId": "string | null",
+          "summary": "string | null",
+          "level": "string | null",
+          "duration": "Duration | null",
+          "context": "string | null"
+        }
+      ],
+      "artwork": "Artwork | null",
+      "provenance": "Provenance"
+    }
+  ],
+  "nextCursor": "string | null",
+  "total": "number",
+  "snapshotId": "string"
+}`
+
 export const CATEGORIES_SHAPE = `{
   "items": [
     {

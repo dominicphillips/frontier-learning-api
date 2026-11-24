@@ -18,6 +18,8 @@ curl -s "https://learning.deployedwork.com/v1/resources?limit=3" | python3 -m js
 | --- | --- |
 | `GET /v1/resources` | Paginated resource metadata across `openai`, `claude`, and `gemini`. Filter by `provider`, `q`, `category` (namespaced `provider:slug`), `kind`, `audience`, `cursor`, and `limit` (`1..100`, default `20`). |
 | `GET /v1/resources/{id}` | Single resource record by URL-derived ID (`oa_`, `ca_`, or `ga_` plus 24 lowercase hex characters). |
+| `GET /v1/learning-paths` | Paginated learning paths with ordered curriculum `steps` resolved against the active snapshot (`resourceId`, `summary`, `level`, `duration`). Filter by `provider`, `q`, `audience`, `contains` (member resource ID), `cursor`, and `limit`. |
+| `GET /v1/learning-paths/{id}` | Single resolved learning path with its ordered `steps` by `oa_`, `ca_`, or `ga_` ID; returns `404` when missing or not a `learning-path`. |
 | `GET /v1/categories` | Namespaced categories (`id` as `provider:slug`, `provider`, `slug`, `label`, `count`). |
 | `GET /v1/providers` | Configured provider summaries and availability. |
 | `GET /v1/status` | Per-provider snapshot freshness, coverage, and aggregate status. |
@@ -32,6 +34,8 @@ Aggregate `kind` filters accept the union of source kinds (`course`, `learning-p
 | --- | --- |
 | `GET /v1/providers/{provider}/resources` | Provider-only paginated resources with native category slugs, provider-specific `kind` enums, and a provider-scoped cursor. |
 | `GET /v1/providers/{provider}/resources/{id}` | Single resource record in that provider's native metadata shape. |
+| `GET /v1/providers/{provider}/learning-paths` | Provider-only paginated resolved learning paths with native category slugs; filter by `q`, `audience`, or `contains` (member resource ID). |
+| `GET /v1/providers/{provider}/learning-paths/{id}` | Single resolved learning path in that provider's native shape. |
 | `GET /v1/providers/{provider}/categories` | Un-namespaced category slugs and counts for that provider. |
 | `GET /v1/providers/{provider}/status` | Snapshot freshness and category coverage for that provider. |
 

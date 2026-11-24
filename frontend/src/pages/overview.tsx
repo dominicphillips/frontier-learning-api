@@ -15,6 +15,7 @@ import {
   DEPLOYEDWORK_URL,
   GITHUB_URL,
   HEALTH_PATH,
+  LEARNING_PATHS_PATH,
   OPENAPI_PATH,
   PROVIDERS,
   PROVIDERS_PATH,
@@ -23,12 +24,14 @@ import {
   RESOURCES_PATH,
   STATUS_PATH,
   curlFor,
+  listLearningPathsPath,
   listResourcesPath,
 } from '@/lib/api'
 import { DOCS_ROUTES } from '@/lib/routes'
 
 const QUICK_START_PATH = listResourcesPath('all', { limit: 5 })
-const AGGREGATE_TRY_PATHS = [QUICK_START_PATH, PROVIDERS_PATH, CATEGORIES_PATH, STATUS_PATH, HEALTH_PATH]
+const QUICK_LEARNING_PATHS = listLearningPathsPath('all', { limit: 5 })
+const AGGREGATE_TRY_PATHS = [QUICK_START_PATH, QUICK_LEARNING_PATHS, PROVIDERS_PATH, CATEGORIES_PATH, STATUS_PATH, HEALTH_PATH]
 const PROVIDER_TRY_PATHS = PROVIDER_IDS.map((provider) => listResourcesPath(provider, { limit: 5 }))
 const TRY_GROUPS = [AGGREGATE_TRY_PATHS, PROVIDER_TRY_PATHS]
 
@@ -37,6 +40,8 @@ type EndpointKey = keyof typeof copy.endpoints
 const ENDPOINTS: { path: string; to: string; key: EndpointKey }[] = [
   { path: RESOURCES_PATH, to: DOCS_ROUTES.resources, key: 'listResources' },
   { path: `${RESOURCES_PATH}/{id}`, to: DOCS_ROUTES.resource, key: 'getResource' },
+  { path: LEARNING_PATHS_PATH, to: DOCS_ROUTES.learningPaths, key: 'listLearningPaths' },
+  { path: `${LEARNING_PATHS_PATH}/{id}`, to: DOCS_ROUTES.learningPaths, key: 'getLearningPath' },
   { path: CATEGORIES_PATH, to: DOCS_ROUTES.categories, key: 'categories' },
   { path: STATUS_PATH, to: DOCS_ROUTES.status, key: 'status' },
   { path: PROVIDERS_PATH, to: `${DOCS_ROUTES.status}#providers`, key: 'providers' },
@@ -45,6 +50,8 @@ const ENDPOINTS: { path: string; to: string; key: EndpointKey }[] = [
 const PROVIDER_ENDPOINTS: { path: string; to: string; key: EndpointKey }[] = [
   { path: '/v1/providers/{provider}/resources', to: DOCS_ROUTES.resources, key: 'providerResources' },
   { path: '/v1/providers/{provider}/resources/{id}', to: DOCS_ROUTES.resource, key: 'providerResource' },
+  { path: '/v1/providers/{provider}/learning-paths', to: DOCS_ROUTES.learningPaths, key: 'providerLearningPaths' },
+  { path: '/v1/providers/{provider}/learning-paths/{id}', to: DOCS_ROUTES.learningPaths, key: 'providerLearningPath' },
   { path: '/v1/providers/{provider}/categories', to: DOCS_ROUTES.categories, key: 'providerCategories' },
   { path: '/v1/providers/{provider}/status', to: DOCS_ROUTES.status, key: 'providerStatus' },
 ]

@@ -6,6 +6,7 @@ export const DOCS_ROUTES = {
   overview: '/docs',
   resources: '/docs/resources',
   resource: '/docs/resource',
+  learningPaths: '/docs/learning-paths',
   categories: '/docs/categories',
   status: '/docs/status',
 } as const

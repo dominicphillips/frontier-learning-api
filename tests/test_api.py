@@ -181,3 +181,138 @@ def test_cache_errors_and_cors(api):
 def test_generated_openapi_matches_runtime(api):
     client, _, _ = api
     assert client.get("/openapi.json").json() == json.loads(Path("schema/openapi.json").read_text())
+
+
+def test_learning_paths_resolve_steps_and_reverse_contains(tmp_path):
+    specs = providers(tmp_path)
+    for name, factory in [
+        ("openai", openai_artifact),
+        ("claude", claude_artifact),
+        ("gemini", gemini_artifact),
+    ]:
+        raw = factory.__wrapped__()
+        if name == "gemini":
+            for resource in raw["resources"]:
+                if resource["kind"] == "learning-path":
+                    resource["detail"]["sections"] = [
+                        {
+                            "title": "Core sequence",
+                            "context": None,
+                            "units": [
+                                {
+                                    "title": "Introduction to Gemini Enterprise",
+                                    "url": "https://www.skills.google/course_templates/1401/",
+                                    "kind": "course",
+                                    "context": None,
+                                    "videoCount": None,
+                                },
+                                {
+                                    "title": "Intro to Context Caching with the Gemini API",
+                                    "url": "https://www.skills.google/focuses/104701",
+                                    "kind": "lab",
+                                    "context": "Hands-on lab",
+                                    "videoCount": None,
+                                },
+                                {
+                                    "title": "Unindexed capstone lab",
+                                    "url": "https://www.skills.google/focuses/999999",
+                                    "kind": "lab",
+                                    "context": "External step",
+                                    "videoCount": None,
+                                },
+                            ],
+                        }
+                    ]
+        artifact = specs[name].models.CollectionArtifact.model_validate_json(json.dumps(raw))
+        snapshot = specs[name].models.build_snapshot(artifact, "fixture")
+        atomic_json(tmp_path / f"{name}.json", snapshot.model_dump(mode="json", by_alias=True))
+
+    with TestClient(create_app(tmp_path)) as client:
+        all_paths = client.get("/v1/learning-paths?limit=100").json()
+        assert all_paths["total"] >= 1
+        gemini_paths = client.get("/v1/learning-paths?provider=gemini").json()
+        assert gemini_paths["total"] == 1
+        lp = gemini_paths["items"][0]
+        assert lp["provider"] == "gemini"
+        assert lp["kind"] == "learning-path"
+        assert lp["stepCount"] == 3
+        assert [step["position"] for step in lp["steps"]] == [1, 2, 3]
+        assert lp["steps"][0]["sectionTitle"] == "Core sequence"
+
+        # Step 1 (trailing slash) and Step 2 (missing query) resolve against catalog resources.
+        resources = {
+            r["url"]: r
+            for r in client.get("/v1/providers/gemini/resources?limit=100").json()["items"]
+        }
+        course = resources["https://www.skills.google/course_templates/1401"]
+        lab = resources["https://www.skills.google/focuses/104701?parent=catalog"]
+        assert lp["steps"][0]["resourceId"] == course["id"]
+        assert lp["steps"][0]["level"] == "beginner"
+        assert lp["steps"][0]["duration"]["courseMinutes"] == 135
+        assert lp["steps"][1]["resourceId"] == lab["id"]
+        assert lp["steps"][1]["level"] == "intermediate"
+        assert lp["steps"][1]["duration"]["courseMinutes"] == 45
+        assert lp["steps"][1]["context"] == "Hands-on lab"
+        # Step 3 is unindexed: keeps unit kind/context and leaves catalog fields null.
+        assert lp["steps"][2]["resourceId"] is None
+        assert lp["steps"][2]["kind"] == "lab"
+        assert lp["steps"][2]["summary"] is None
+        assert lp["steps"][2]["level"] is None
+        assert lp["steps"][2]["duration"] is None
+        assert lp["steps"][2]["context"] == "External step"
+
+        # Reverse lookup via ?contains=<resource_id> works on aggregate and provider-scoped routes.
+        by_member = client.get("/v1/learning-paths", params={"contains": lab["id"]}).json()
+        assert [item["id"] for item in by_member["items"]] == [lp["id"]]
+        by_member_scoped = client.get(
+            "/v1/providers/gemini/learning-paths", params={"contains": course["id"]}
+        ).json()
+        assert [item["id"] for item in by_member_scoped["items"]] == [lp["id"]]
+        assert "provider" not in by_member_scoped["items"][0]
+        assert by_member_scoped["items"][0]["categoryIds"] == [
+            "gemini-enterprise-and-gemini-notebook-3666"
+        ]
+        assert client.get("/v1/learning-paths", params={"contains": "bad-id"}).status_code == 422
+
+        # Single-path lookup succeeds for learning-path IDs and 404s for non-path or unknown IDs.
+        single = client.get(f"/v1/learning-paths/{lp['id']}")
+        assert single.status_code == 200 and single.json() == lp
+        assert single.headers["etag"].startswith('W/"')
+        assert (
+            client.get(
+                f"/v1/learning-paths/{lp['id']}", headers={"If-None-Match": single.headers["etag"]}
+            ).status_code
+            == 304
+        )
+        assert client.get(f"/v1/providers/gemini/learning-paths/{lp['id']}").status_code == 200
+        assert client.get(f"/v1/learning-paths/{course['id']}").status_code == 404
+        assert client.get(f"/v1/providers/gemini/learning-paths/{course['id']}").status_code == 404
+        assert client.get(f"/v1/providers/openai/learning-paths/{lp['id']}").status_code == 404
+        assert client.get("/v1/providers/claude/learning-paths").json()["total"] == 0
+
+        # Search matches step titles too.
+        by_step_title = client.get("/v1/learning-paths", params={"q": "Context Caching"}).json()
+        assert [item["id"] for item in by_step_title["items"]] == [lp["id"]]
+
+        # Pagination cursor and filter-hash mismatch enforcement.
+        page1 = client.get("/v1/learning-paths", params={"limit": 1}).json()
+        assert len(page1["items"]) == 1 and page1["nextCursor"] is not None
+        assert (
+            client.get(
+                "/v1/learning-paths",
+                params={"limit": 1, "cursor": page1["nextCursor"], "provider": "gemini"},
+            ).status_code
+            == 400
+        )
+
+        # Method and caching discipline.
+        assert client.post("/v1/learning-paths").status_code == 405
+        assert client.head("/v1/learning-paths").status_code == 405
+
+    # Partial source failure isolates scoped and single-path routes from aggregate list 503.
+    (tmp_path / "claude.json").unlink()
+    with TestClient(create_app(tmp_path)) as partial:
+        agg = partial.get("/v1/learning-paths")
+        assert agg.status_code == 503 and agg.headers["cache-control"] == "no-store"
+        assert partial.get(f"/v1/learning-paths/{lp['id']}").status_code == 200
+        assert partial.get("/v1/providers/gemini/learning-paths").status_code == 200

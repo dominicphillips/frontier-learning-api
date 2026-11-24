@@ -12,6 +12,7 @@
     "overview": "Overview",
     "resources": "Resources",
     "resourceDetail": "Resource detail",
+    "learningPaths": "Learning paths",
     "categories": "Categories",
     "status": "Status",
     "github": "GitHub",
@@ -110,11 +111,15 @@
   "endpoints": {
     "listResources": "Filter and paginate indexed learning resources across providers by provider, keyword, category, kind, or audience.",
     "getResource": "Fetch full metadata, curriculum sections, durations, and provenance for one oa_, ca_, or ga_ resource ID.",
+    "listLearningPaths": "Filter and paginate resolved learning paths with ordered curriculum steps by provider, keyword, audience, or contained resource ID.",
+    "getLearningPath": "Fetch one resolved learning path and its ordered step records by oa_, ca_, or ga_ resource ID.",
     "categories": "List indexed categories with their namespaced IDs (provider:slug), providers, slugs, display labels, and current resource counts.",
     "status": "Check aggregate snapshot state, total resource count, and per-provider freshness, refresh timestamps, and category coverage.",
     "providers": "List configured providers with their source URLs, ID prefixes, supported kinds, and current snapshot status.",
     "providerResources": "Filter and paginate one provider's native resources by q, plain category slug, provider-specific kind, or audience.",
     "providerResource": "Fetch one provider's native resource record by ID; returns 404 unless the ID matches that provider's prefix and exists.",
+    "providerLearningPaths": "Filter and paginate one provider's resolved learning paths with native category slugs by q, audience, or contained resource ID.",
+    "providerLearningPath": "Fetch one provider's native resolved learning path by ID; returns 404 unless the ID belongs to that provider and has kind learning-path.",
     "providerCategories": "List one provider's categories with plain slug IDs, display labels, resource counts, and snapshotId.",
     "providerStatus": "Check one provider's snapshot state, snapshotId, refresh timestamps, resourceCount, and category coverage.",
     "health": "Liveness check returning HTTP 200 and status ok when the server process is up.",
@@ -216,6 +221,48 @@
       "contentHash": "Content hash",
       "sourceUrls": "Source URLs"
     }
+  },
+  "learningPaths": {
+    "title": "List and inspect resolved learning paths",
+    "lede": "Query multi-step learning paths across OpenAI, Anthropic, and Google with each curriculum unit matched against the active snapshot to attach its standalone catalog resource ID, kind, level, summary, and duration.",
+    "tryHeading": "Test GET /v1/learning-paths",
+    "tryLede": "Filter by provider, keyword, audience, or a contained oa_, ca_, or ga_ resource ID to inspect learning paths and their resolved steps.",
+    "filters": {
+      "q": "Search query (q)",
+      "contains": "Contains resource ID",
+      "containsHint": "oa_, ca_, or ga_ plus 24 hex chars",
+      "audience": "Audience",
+      "limit": "Limit"
+    },
+    "resultsHeading": "Matching learning paths",
+    "resultsSummary": "Showing {count} of {total} matching learning paths",
+    "resultsCount": "Showing {count} matching learning paths",
+    "stepCountOne": "{count} step",
+    "stepCount": "{count} steps",
+    "externalStep": "Direct source link (no standalone catalog record)",
+    "empty": "No learning paths in the current snapshot matched these filters. Clear or broaden a filter and run the request again.",
+    "paramsHeading": "Query parameters",
+    "params": {
+      "provider": "Provider filter on GET /v1/learning-paths only: openai, claude, or gemini (included in the cursor filter hash).",
+      "q": "Case-insensitive text search across learning path titles, summaries, tags, and step titles (up to 200 characters).",
+      "audience": "Target audience filter: general, knowledge-workers, developers, leaders, educators, students, admins, or other.",
+      "contains": "Resource ID (oa_, ca_, or ga_ plus 24 lowercase hex characters) to return only learning paths that include that course or lab as a resolved step.",
+      "cursor": "Opaque pagination token from nextCursor; must be sent with the same filters against the same snapshotId.",
+      "limit": "Maximum number of learning paths to return per page (1 to {max}, default {default})."
+    },
+    "responseHeading": "Response fields and step resolution",
+    "shapeNote": "Each step resolves its canonical unit URL against the same provider's snapshot without altering provenance.contentHash; steps without a standalone catalog record still populate kind from the unit and keep resourceId, summary, level, and duration as null.",
+    "response": {
+      "items": "Page of matching LearningPath objects ordered by ID hash suffix and full ID.",
+      "stepCount": "Total number of ordered curriculum steps in the learning path.",
+      "steps": "Ordered step objects with 1-based position, sectionTitle, title, url, kind, resourceId, summary, level, duration, and context.",
+      "stepResourceId": "Catalog resource ID (oa_, ca_, or ga_) when the step URL matches an indexed resource in that provider's snapshot, or null when unindexed.",
+      "nextCursor": "Opaque cursor for the next page of results, or null when no further items match.",
+      "total": "Total number of learning paths in the snapshot matching the active filters.",
+      "snapshotId": "SHA-256 identifier of the combined multi-provider snapshot serving this page."
+    },
+    "singleHeading": "Fetch a single learning path by ID",
+    "singleLede": "Request GET /v1/learning-paths/{id} for the aggregate shape or GET /v1/providers/{provider}/learning-paths/{id} for the provider-native shape; both return 404 if the ID is missing or is not a learning-path resource."
   },
   "categories": {
     "title": "List indexed resource categories",

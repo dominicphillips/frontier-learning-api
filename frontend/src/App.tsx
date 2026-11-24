@@ -4,6 +4,7 @@ import { copy, fmt } from '@/copy'
 import { useLocation } from '@/lib/router'
 import { DOCS_ROUTES } from '@/lib/routes'
 import { CategoriesPage } from '@/pages/categories'
+import { LearningPathsPage } from '@/pages/learning-paths'
 import { NotFoundPage } from '@/pages/not-found'
 import { OverviewPage } from '@/pages/overview'
 import { ResourceDetailPage } from '@/pages/resource-detail'
@@ -22,6 +23,7 @@ function resolve(pathname: string): Route {
   if (pathname === DOCS_ROUTES.resource) return { page: 'resourceDetail' }
   const detail = pathname.match(/^\/docs\/resources\/([^/]+)$/)
   if (detail) return { page: 'resourceDetail', id: decodeURIComponent(detail[1]) }
+  if (pathname === DOCS_ROUTES.learningPaths) return { page: 'learningPaths' }
   if (pathname === DOCS_ROUTES.categories) return { page: 'categories' }
   if (pathname === DOCS_ROUTES.status) return { page: 'status' }
   return { page: 'notFound' }
@@ -31,6 +33,7 @@ const TITLES: Record<PageKey, () => string> = {
   overview: () => copy.overview.title,
   resources: () => copy.resources.title,
   resourceDetail: () => copy.resource.title,
+  learningPaths: () => copy.learningPaths.title,
   categories: () => copy.categories.title,
   status: () => copy.status.title,
   notFound: () => copy.notFound.title,
@@ -55,6 +58,9 @@ export default function App() {
       break
     case 'resourceDetail':
       page = <ResourceDetailPage id={route.id} search={search} />
+      break
+    case 'learningPaths':
+      page = <LearningPathsPage search={search} />
       break
     case 'categories':
       page = <CategoriesPage search={search} />

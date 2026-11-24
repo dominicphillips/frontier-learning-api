@@ -35,6 +35,7 @@ def client(tmp_path, web):
         "/docs",
         "/docs/resources",
         "/docs/resource",
+        "/docs/learning-paths",
         "/docs/categories",
         "/docs/status",
         "/docs/resources/oa_" + "a" * 24,
@@ -158,6 +159,7 @@ def test_reserved_files_and_symlinks_do_not_escape(tmp_path, web):
         "api",
         "resources",
         "resource",
+        "learning-paths",
         "categories",
         "status",
     ):

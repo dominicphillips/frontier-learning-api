@@ -15,6 +15,7 @@ export const PROVIDERS_PATH = '/v1/providers'
 export const CATEGORIES_PATH = '/v1/categories'
 export const STATUS_PATH = '/v1/status'
 export const RESOURCES_PATH = '/v1/resources'
+export const LEARNING_PATHS_PATH = '/v1/learning-paths'
 
 export const LIST_LIMIT_DEFAULT = 20
 export const LIST_LIMIT_MAX = 100
@@ -114,6 +115,15 @@ export type ListParams = {
   limit?: number
 }
 
+export type LearningPathListParams = {
+  provider?: string
+  q?: string
+  audience?: string
+  contains?: string
+  cursor?: string
+  limit?: number
+}
+
 type QueryValue = string | number | null | undefined
 
 export function queryString(params: Record<string, QueryValue>): string {
@@ -134,6 +144,14 @@ export function resourceTemplate(scope: Scope): string {
   return `${scopeRoot(scope)}/resources/{id}`
 }
 
+export function learningPathsTemplate(scope: Scope): string {
+  return `${scopeRoot(scope)}/learning-paths`
+}
+
+export function learningPathTemplate(scope: Scope): string {
+  return `${scopeRoot(scope)}/learning-paths/{id}`
+}
+
 export function categoriesTemplate(scope: Scope): string {
   return `${scopeRoot(scope)}/categories`
 }
@@ -144,6 +162,14 @@ export function statusTemplate(scope: Scope): string {
 
 export function listResourcesPath(scope: Scope, params: ListParams = {}): string {
   return `${resourcesTemplate(scope)}${queryString(params)}`
+}
+
+export function listLearningPathsPath(scope: Scope, params: LearningPathListParams = {}): string {
+  return `${learningPathsTemplate(scope)}${queryString(params)}`
+}
+
+export function learningPathPath(id: string, scope: Scope = 'all'): string {
+  return `${learningPathsTemplate(scope)}/${encodeURIComponent(id)}`
 }
 
 export function resourcePath(id: string, scope: Scope = 'all'): string {
@@ -248,6 +274,41 @@ export interface ResourceList {
   snapshotId: string | null
 }
 
+export interface LearningPathStep {
+  position: number
+  sectionTitle: string | null
+  title: string
+  url: string
+  kind: string
+  resourceId: string | null
+  summary: string | null
+  level: string | null
+  duration: ResourceDuration | null
+  context: string | null
+}
+
+export interface LearningPath {
+  id: string
+  provider: string | null
+  title: string
+  url: string
+  categoryIds: string[]
+  audiences: string[]
+  tags: string[]
+  summary: string | null
+  level: string | null
+  duration: ResourceDuration
+  stepCount: number
+  steps: LearningPathStep[]
+}
+
+export interface LearningPathList {
+  items: LearningPath[]
+  nextCursor: string | null
+  total: number | null
+  snapshotId: string | null
+}
+
 export interface Category {
   /** provider:slug on aggregate routes, the plain slug on provider routes. */
   id: string
@@ -317,6 +378,66 @@ export function toResource(value: unknown): Resource | null {
 export function toResourceList(value: unknown): ResourceList | null {
   if (!isRecord(value) || !Array.isArray(value.items)) return null
   const items = value.items.map(toResource).filter((item): item is Resource => item !== null)
+  return {
+    items,
+    nextCursor: stringOrNull(value.nextCursor),
+    total: numberOrNull(value.total),
+    snapshotId: stringOrNull(value.snapshotId),
+  }
+}
+
+export function toLearningPathStep(value: unknown): LearningPathStep | null {
+  if (!isRecord(value) || typeof value.title !== 'string') return null
+  const duration = isRecord(value.duration)
+    ? {
+        courseMinutes: numberOrNull(value.duration.courseMinutes),
+        pathMinutes: numberOrNull(value.duration.pathMinutes),
+        videoSeconds: numberOrNull(value.duration.videoSeconds),
+      }
+    : null
+  return {
+    position: numberOrNull(value.position) ?? 1,
+    sectionTitle: stringOrNull(value.sectionTitle),
+    title: value.title,
+    url: stringOrNull(value.url) ?? '',
+    kind: stringOrNull(value.kind) ?? '',
+    resourceId: stringOrNull(value.resourceId),
+    summary: stringOrNull(value.summary),
+    level: stringOrNull(value.level),
+    duration,
+    context: stringOrNull(value.context),
+  }
+}
+
+export function toLearningPath(value: unknown): LearningPath | null {
+  if (!isRecord(value) || typeof value.id !== 'string' || typeof value.title !== 'string') return null
+  const duration = isRecord(value.duration) ? value.duration : {}
+  const steps = Array.isArray(value.steps)
+    ? value.steps.map(toLearningPathStep).filter((step): step is LearningPathStep => step !== null)
+    : []
+  return {
+    id: value.id,
+    provider: stringOrNull(value.provider),
+    title: value.title,
+    url: stringOrNull(value.url) ?? '',
+    categoryIds: stringArray(value.categoryIds),
+    audiences: stringArray(value.audiences),
+    tags: stringArray(value.tags),
+    summary: stringOrNull(value.summary),
+    level: stringOrNull(value.level),
+    duration: {
+      courseMinutes: numberOrNull(duration.courseMinutes),
+      pathMinutes: numberOrNull(duration.pathMinutes),
+      videoSeconds: numberOrNull(duration.videoSeconds),
+    },
+    stepCount: numberOrNull(value.stepCount) ?? steps.length,
+    steps,
+  }
+}
+
+export function toLearningPathList(value: unknown): LearningPathList | null {
+  if (!isRecord(value) || !Array.isArray(value.items)) return null
+  const items = value.items.map(toLearningPath).filter((item): item is LearningPath => item !== null)
   return {
     items,
     nextCursor: stringOrNull(value.nextCursor),

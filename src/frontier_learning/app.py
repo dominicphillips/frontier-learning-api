@@ -23,7 +23,14 @@ FRONTEND_CSP = (
     "script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; "
     "img-src 'self' data:; connect-src 'self'; form-action 'none'"
 )
-DOC_PAGES = ("/docs", "/docs/resources", "/docs/resource", "/docs/categories", "/docs/status")
+DOC_PAGES = (
+    "/docs",
+    "/docs/resources",
+    "/docs/resource",
+    "/docs/learning-paths",
+    "/docs/categories",
+    "/docs/status",
+)
 SWAGGER_PATHS = ("/docs/api", "/docs/api/oauth2-redirect")
 
 
@@ -104,6 +111,7 @@ def mount_frontend(app: FastAPI, root: Path, specs: dict[str, catalog.ProviderSp
         "api",
         "resources",
         "resource",
+        "learning-paths",
         "categories",
         "status",
         "v1",
@@ -209,6 +217,25 @@ def matches(resource, search, category, kind, audience):
     )
 
 
+def matches_learning_path(item: dict, search: str, audience: str | None, contains: str | None):
+    return (
+        (audience is None or audience in item["audiences"])
+        and (contains is None or any(step["resourceId"] == contains for step in item["steps"]))
+        and (
+            not search
+            or search
+            in " ".join(
+                [
+                    item["title"],
+                    item["summary"] or "",
+                    *item["tags"],
+                    *(step["title"] for step in item["steps"]),
+                ]
+            ).casefold()
+        )
+    )
+
+
 def provider_router(spec: catalog.ProviderSpec) -> APIRouter:
     router = APIRouter(prefix=f"/v1/providers/{spec.id}", tags=[spec.label])
     models, store = spec.models, spec.store
@@ -273,6 +300,47 @@ def provider_router(spec: catalog.ProviderSpec) -> APIRouter:
             if item.id == resource_id:
                 return cached_result(request, item)
         raise fail(404, "resource-not-found")
+
+    @router.get(
+        "/learning-paths",
+        response_model=catalog.ProviderLearningPathPage,
+        responses={304: {"description": "Not modified"}},
+    )
+    def learning_paths(
+        request: Request,
+        q: Annotated[str | None, Query(max_length=200)] = None,
+        audience: Audience | None = None,
+        contains: Annotated[catalog.ResourceId | None, Query()] = None,
+        cursor: Annotated[str | None, Query(max_length=1024)] = None,
+        limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    ):
+        snapshot = store.read()
+        search = " ".join((q or "").split()).casefold()
+        filters = {"q": search, "audience": audience, "contains": contains}
+        items = [
+            item
+            for item in catalog.snapshot_learning_paths(spec.id, snapshot, aggregate=False)
+            if matches_learning_path(item, search, audience, contains)
+        ]
+        return cached_result(request, paginate(items, snapshot.snapshot_id, filters, cursor, limit))
+
+    @router.get(
+        "/learning-paths/{resource_id}",
+        response_model=catalog.ProviderLearningPath,
+        responses={304: {"description": "Not modified"}},
+    )
+    def learning_path(resource_id: str, request: Request):
+        if not re.fullmatch(spec.prefix + r"[a-f0-9]{24}", resource_id):
+            raise fail(404, "learning-path-not-found")
+        snapshot = store.read()
+        by_url = {catalog.canonical_url_key(item.url): item for item in snapshot.resources}
+        for item in snapshot.resources:
+            if item.id == resource_id and item.kind == "learning-path":
+                return cached_result(
+                    request,
+                    catalog.project_learning_path(spec.id, item, by_url, aggregate=False),
+                )
+        raise fail(404, "learning-path-not-found")
 
     @router.get("/health/ready", include_in_schema=False)
     def ready():
@@ -471,6 +539,58 @@ def create_app(data_dir: Path | str, frontend_dir: Path | str | None = None) -> 
             if item.id == resource_id:
                 return cached_result(request, catalog.project_resource(spec.id, item))
         raise fail(404, "resource-not-found")
+
+    @app.get(
+        "/v1/learning-paths",
+        response_model=catalog.LearningPathPage,
+        responses={304: {"description": "Not modified"}},
+    )
+    def learning_paths(
+        request: Request,
+        provider: catalog.ProviderId | None = None,
+        q: Annotated[str | None, Query(max_length=200)] = None,
+        audience: Audience | None = None,
+        contains: Annotated[catalog.ResourceId | None, Query()] = None,
+        cursor: Annotated[str | None, Query(max_length=1024)] = None,
+        limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    ):
+        values, snapshot_id = snapshots()
+        search = " ".join((q or "").split()).casefold()
+        filters = {
+            "q": search,
+            "audience": audience,
+            "contains": contains,
+            "provider": provider,
+        }
+        items = [
+            item
+            for name, snapshot in values.items()
+            if provider is None or name == provider
+            for item in catalog.snapshot_learning_paths(name, snapshot, aggregate=True)
+            if matches_learning_path(item, search, audience, contains)
+        ]
+        return cached_result(
+            request, paginate(items, snapshot_id, filters, cursor, limit, aggregate=True)
+        )
+
+    @app.get(
+        "/v1/learning-paths/{resource_id}",
+        response_model=catalog.LearningPath,
+        responses={304: {"description": "Not modified"}},
+    )
+    def learning_path(resource_id: str, request: Request):
+        if not re.fullmatch(r"(?:oa|ca|ga)_[a-f0-9]{24}", resource_id):
+            raise fail(404, "learning-path-not-found")
+        spec = next(spec for spec in specs.values() if resource_id.startswith(spec.prefix))
+        snapshot = spec.store.read()
+        by_url = {catalog.canonical_url_key(item.url): item for item in snapshot.resources}
+        for item in snapshot.resources:
+            if item.id == resource_id and item.kind == "learning-path":
+                return cached_result(
+                    request,
+                    catalog.project_learning_path(spec.id, item, by_url, aggregate=True),
+                )
+        raise fail(404, "learning-path-not-found")
 
     for spec in specs.values():
         app.include_router(provider_router(spec))
